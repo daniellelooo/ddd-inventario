@@ -275,17 +275,20 @@ El proyecto implementa **Domain-Driven Design (DDD)** con 4 capas:
 
 ```mermaid
 flowchart TB
-    subgraph GI[Gestión de Inventarios]
+    classDef node fill:#ffffff,stroke:#333,color:#111,font-size:14px;
+    classDef decision fill:#ffffff,stroke:#333,color:#111,font-size:14px;
+
+    subgraph GI[Gestion de Inventarios]
         AI[Administrador de Inventario]
         PV[Proveedor]
         OC[Orden de Compra]
-        RM[Recepción de Mercancía]
+        RM[Recepcion de Mercancia]
         AU[Actualizar Inventario]
         CS[Consultar Stock]
         AL[Configurar Alertas]
         GR[Generar Reportes]
         CA[Contador/Auditor]
-        VF[Verificar Inventario Físico]
+        VF[Verificar Inventario Fisico]
         AD[Ajustar Discrepancias]
         SB{Stock bajo?}
         CT[Continuar]
@@ -312,12 +315,10 @@ flowchart TB
 
     SC --> CI --> DS --> SB
     SB -- No --> CT
-    SB -- Sí --> GA --> NA --> COC --> OC
+    SB -- Si --> GA --> NA --> COC --> OC
 
-    classDef actor fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
-    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
-    class AI,CA actor;
-    class SC external;
+    class AI,PV,OC,RM,AU,CS,AL,GR,CA,VF,AD,CT,GA,NA,COC,SC,CI,DS node;
+    class SB decision;
 ```
 
 ### 1. Flujo Organizacional (Resumen)

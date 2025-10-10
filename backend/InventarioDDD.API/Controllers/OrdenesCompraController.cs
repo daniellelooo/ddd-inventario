@@ -81,7 +81,7 @@ namespace InventarioDDD.API.Controllers
             try
             {
                 command.OrdenId = id;
-                var resultado = await _mediator.Send(command);
+                var loteId = await _mediator.Send(command);
 
                 return Ok(new
                 {
@@ -140,7 +140,8 @@ namespace InventarioDDD.API.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = "Orden de compra recibida exitosamente"
+                    message = "Orden de compra recibida exitosamente",
+                    data = new { loteId = resultado }
                 });
             }
             catch (ArgumentException ex)

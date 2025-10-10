@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiPackage,
   FiAlertTriangle,
@@ -37,6 +38,7 @@ const Dashboard: React.FC = () => {
     []
   );
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadDashboardData();
@@ -87,10 +89,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="stat-info">
             <h3>Total Ingredientes</h3>
-            <p className="stat-value">{stats.totalIngredientes}</p>
-          </div>
-          <div className="stat-trend stat-trend-up">
-            <FiTrendingUp /> +5%
+            <p className="stat-value">{typeof stats.totalIngredientes === 'number' ? stats.totalIngredientes : 0}</p>
           </div>
         </div>
 
@@ -100,10 +99,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="stat-info">
             <h3>Bajo Stock</h3>
-            <p className="stat-value">{stats.ingredientesBajoStock}</p>
-          </div>
-          <div className="stat-trend stat-trend-down">
-            <FiTrendingDown /> -2%
+            <p className="stat-value">{typeof stats.ingredientesBajoStock === 'number' ? stats.ingredientesBajoStock : 0}</p>
           </div>
         </div>
 
@@ -113,7 +109,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="stat-info">
             <h3>Próximos a Vencer</h3>
-            <p className="stat-value">{stats.lotesProximosVencer}</p>
+            <p className="stat-value">{typeof stats.lotesProximosVencer === 'number' ? stats.lotesProximosVencer : 0}</p>
           </div>
         </div>
 
@@ -123,7 +119,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="stat-info">
             <h3>Órdenes Pendientes</h3>
-            <p className="stat-value">{stats.ordenesPendientes}</p>
+            <p className="stat-value">{typeof stats.ordenesPendientes === 'number' ? stats.ordenesPendientes : 0}</p>
           </div>
         </div>
       </div>
@@ -133,14 +129,14 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-section">
           <div className="section-header">
             <h2>Ingredientes para Reabastecer</h2>
-            <button className="btn btn-outline">Ver Todos</button>
+            <button className="btn btn-outline" onClick={() => navigate("/ingredientes")}>Ver Todos</button>
           </div>
           <div className="card">
-            {ingredientesReabastecer.length === 0 ? (
+            {Array.isArray(ingredientesReabastecer) && ingredientesReabastecer.length === 0 ? (
               <p className="empty-state">
                 No hay ingredientes que necesiten reabastecimiento
               </p>
-            ) : (
+            ) : Array.isArray(ingredientesReabastecer) ? (
               <div className="table-container">
                 <table>
                   <thead>
@@ -162,27 +158,27 @@ const Dashboard: React.FC = () => {
                         <td>{ing.categoriaNombre}</td>
                         <td>
                           <span className="badge badge-warning">
-                            {ing.cantidadActual} {ing.unidadMedida.simbolo}
+                            {ing.cantidadActual} {ing.unidadMedida?.simbolo || ""}
                           </span>
                         </td>
                         <td>
-                          {ing.stockMinimo} {ing.unidadMedida.simbolo}
+                          {ing.stockMinimo} {ing.unidadMedida?.simbolo || ""}
                         </td>
                         <td>
                           <strong>
-                            {ing.cantidadSugerida} {ing.unidadMedida.simbolo}
+                            {ing.cantidadSugerida} {ing.unidadMedida?.simbolo || ""}
                           </strong>
                         </td>
                         <td>
-                          <button className="btn btn-primary btn-sm">
-                            Crear Orden
-                          </button>
+                          <button className="btn btn-primary btn-sm" onClick={() => navigate("/ordenes-compra")}>Crear Orden</button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+            ) : (
+              <p className="empty-state">No hay datos de ingredientes para reabastecer</p>
             )}
           </div>
         </div>
@@ -191,12 +187,12 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-section">
           <div className="section-header">
             <h2>Lotes Próximos a Vencer (7 días)</h2>
-            <button className="btn btn-outline">Ver Todos</button>
+            <button className="btn btn-outline" onClick={() => navigate("/lotes")}>Ver Todos</button>
           </div>
           <div className="card">
-            {lotesVencer.length === 0 ? (
+            {Array.isArray(lotesVencer) && lotesVencer.length === 0 ? (
               <p className="empty-state">No hay lotes próximos a vencer</p>
-            ) : (
+            ) : Array.isArray(lotesVencer) ? (
               <div className="table-container">
                 <table>
                   <thead>
@@ -218,11 +214,11 @@ const Dashboard: React.FC = () => {
                         <td>{lote.ingredienteNombre}</td>
                         <td>{lote.cantidadDisponible}</td>
                         <td>
-                          {format(
+                          {lote.fechaVencimiento ? format(
                             new Date(lote.fechaVencimiento),
                             "dd/MM/yyyy",
                             { locale: es }
-                          )}
+                          ) : "-"}
                         </td>
                         <td>
                           <span
@@ -243,6 +239,8 @@ const Dashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+            ) : (
+              <p className="empty-state">No hay datos de lotes próximos a vencer</p>
             )}
           </div>
         </div>
@@ -251,12 +249,12 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-section">
           <div className="section-header">
             <h2>Órdenes de Compra Pendientes</h2>
-            <button className="btn btn-outline">Ver Todas</button>
+            <button className="btn btn-outline" onClick={() => navigate("/ordenes-compra")}>Ver Todas</button>
           </div>
           <div className="card">
-            {ordenesPendientes.length === 0 ? (
+            {Array.isArray(ordenesPendientes) && ordenesPendientes.length === 0 ? (
               <p className="empty-state">No hay órdenes pendientes</p>
-            ) : (
+            ) : Array.isArray(ordenesPendientes) ? (
               <div className="table-container">
                 <table>
                   <thead>
@@ -281,7 +279,7 @@ const Dashboard: React.FC = () => {
                         <td>{orden.cantidad}</td>
                         <td>
                           <strong>
-                            ${orden.total.toLocaleString()} {orden.moneda}
+                            ${orden.total?.toLocaleString?.() ?? orden.total} {orden.moneda}
                           </strong>
                         </td>
                         <td>
@@ -290,15 +288,17 @@ const Dashboard: React.FC = () => {
                           </span>
                         </td>
                         <td>
-                          {format(new Date(orden.fechaEsperada), "dd/MM/yyyy", {
+                          {orden.fechaEsperada ? format(new Date(orden.fechaEsperada), "dd/MM/yyyy", {
                             locale: es,
-                          })}
+                          }) : "-"}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+            ) : (
+              <p className="empty-state">No hay datos de órdenes pendientes</p>
             )}
           </div>
         </div>

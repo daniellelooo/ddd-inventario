@@ -119,6 +119,23 @@ namespace InventarioDDD.API.Controllers
                 return StatusCode(500, new { message = "Error al crear el proveedor", error = ex.Message });
             }
         }
+        /// <summary>
+        /// Elimina un proveedor por id
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(Guid id)
+        {
+            try
+            {
+                await _proveedorRepository.EliminarAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar proveedor");
+                return StatusCode(500, new { message = "Error al eliminar proveedor", error = ex.Message });
+            }
+        }
     }
 
     public class CrearProveedorRequest

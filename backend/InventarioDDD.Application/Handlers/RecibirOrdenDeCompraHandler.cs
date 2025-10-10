@@ -10,7 +10,7 @@ namespace InventarioDDD.Application.Handlers
     /// <summary>
     /// Handler para recibir una orden de compra y crear los lotes
     /// </summary>
-    public class RecibirOrdenDeCompraHandler : IRequestHandler<RecibirOrdenDeCompraCommand, bool>
+    public class RecibirOrdenDeCompraHandler : IRequestHandler<RecibirOrdenDeCompraCommand, Guid>
     {
         private readonly IOrdenDeCompraRepository _ordenRepository;
         private readonly ILoteRepository _loteRepository;
@@ -29,15 +29,17 @@ namespace InventarioDDD.Application.Handlers
             _servicioRecepcion = servicioRecepcion;
         }
 
-        public async Task<bool> Handle(RecibirOrdenDeCompraCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(RecibirOrdenDeCompraCommand request, CancellationToken cancellationToken)
         {
             // Obtener la orden (es un aggregate)
             var ordenAggregate = await _ordenRepository.ObtenerPorIdAsync(request.OrdenId);
             if (ordenAggregate == null)
                 throw new ArgumentException($"Orden de compra con ID {request.OrdenId} no encontrada");
 
-            // Recibir la orden (el aggregate crea el lote internamente)
-            ordenAggregate.RecibirOrden(DateTime.UtcNow);
+
+            // Recibir la orden usando los datos de lotes enviados
+            var lotesData = request.Lotes.Select(l => (l.CodigoLote, l.Cantidad, l.FechaVencimiento)).ToList();
+            ordenAggregate.RecibirOrdenConLotes(lotesData, DateTime.UtcNow);
 
             // Obtener el lote creado por el aggregate
             var loteCreado = ordenAggregate.LotesRecibidos.LastOrDefault();
@@ -61,7 +63,7 @@ namespace InventarioDDD.Application.Handlers
             // Guardar la orden actualizada
             await _ordenRepository.GuardarAsync(ordenAggregate);
 
-            return true;
+            return loteCreado?.Id ?? Guid.Empty;
         }
     }
 }

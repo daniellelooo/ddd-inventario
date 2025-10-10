@@ -15,6 +15,7 @@ Sistema de gestión de inventario para restaurantes implementado con **Domain-Dr
 7. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 8. [Documentación](#-documentación)
 9. [Endpoints API](#-endpoints-api)
+10. [Rúbrica de Entrega](#-rúbrica-de-entrega)
 
 ---
 
@@ -35,7 +36,7 @@ Sistema de gestión de inventario para restaurantes implementado con **Domain-Dr
 
 ### Invariantes Críticas
 
-� **Stock nunca puede ser negativo**  
+🔒 **Stock nunca puede ser negativo**  
 🔒 **Solo órdenes aprobadas pueden ser recibidas**  
 🔒 **Cantidad disponible de lote ≤ cantidad inicial**  
 🔒 **Fecha de vencimiento debe ser futura al crear lote**  
@@ -65,6 +66,54 @@ Sistema de gestión de inventario para restaurantes implementado con **Domain-Dr
 - **Entity Framework Core Documentation**
 
 ---
+
+## 🏅 Rúbrica de Entrega
+
+Esta sección mapea explícitamente los elementos exigidos por la rúbrica de la entrega a la documentación y al código del proyecto.
+
+### Aspectos de Diseño (25 puntos)
+
+- Gráfica con flujo de la estructura organizacional agrupada por afinidad, destacando el dominio seleccionado:
+    - Referencia: sección [Estructura Organizacional y Dominios](#2-estructura-organizacional-y-dominios) con diagrama Mermaid; el dominio seleccionado (Gestión de Inventario) está resaltado en color verde con estrella.
+- Gráficos con Dominios y dentro de ellos entidades y agregados:
+    - Referencia: sección [Entidades y Agregados](#2-entidades-y-agregados) con tres agregados principales (Ingrediente, Orden de Compra, Lote) y sus entidades relacionadas.
+- Gráfico de Bounded Context mostrando flujo de entidades, agregados, servicios y APIs que consume:
+    - Referencia: sección [Bounded Context y Arquitectura](#3-bounded-context-y-arquitectura) con API, Application, Domain, Infrastructure y contextos externos.
+- Lenguaje Ubicuo presentado en un glosario de términos de negocio:
+    - Referencia: sección [Lenguaje Ubicuo (Ubiquitous Language)](#7-lenguaje-ubicuo-ubiquitous-language) con tabla y frases del dominio.
+- Objetos de Valor del dominio seleccionado:
+    - Referencia: sección [Value Objects](#4-value-objects) con diagramas y características (inmutabilidad, igualdad por valor, autovalidación).
+- Triggers y Eventos del dominio seleccionado:
+    - Referencia: sección [Domain Events y Flujos](#5-domain-events-y-flujos) y tabla de eventos implementados.
+- Definir Servicios del dominio seleccionado:
+    - Referencia: sección [Domain Services](#6-domain-services) con responsabilidades y métodos principales.
+
+### Aspectos de Implementación (25 puntos)
+
+#### Capa de Dominio (10 puntos)
+- Entidades enriquecidas que implementan comportamientos: ver `InventarioDDD.Domain/Entities` y agregados en `.../Aggregates`.
+- Value Objects inmutables: ver `InventarioDDD.Domain/ValueObjects` (constructores con validaciones y sin setters públicos).
+- Agregados con consistencia: raíz claramente identificada; acceso y reglas centralizadas en la raíz (Ingrediente, OrdenDeCompra, Lote).
+- Domain Events: definidos en `InventarioDDD.Domain/Events` con nombres en pasado y emitidos desde agregados/servicios.
+- Interfaces de Dominio: repositorios definidos en `InventarioDDD.Domain/Interfaces` e implementados en Infraestructura.
+
+#### Capa de Aplicación (5 puntos)
+- Use cases específicos: Commands/Queries en `InventarioDDD.Application/{Commands,Queries}`; cada handler ejecuta una acción de negocio.
+- Orquestación: Handlers (MediatR) coordinan servicios de dominio; no contienen lógica de negocio compleja.
+- Transacciones bien manejadas: operaciones de recepción/consumo se ejecutan de forma consistente vía repositorios y DbContext.
+
+#### Capa de Infraestructura (5 puntos)
+- Repositorios implementan interfaces del dominio: `InventarioDDD.Infrastructure/Repositories`.
+- ORM (EF Core) sólo en infraestructura: `InventarioDDD.Infrastructure/Persistence` y `Configuration`.
+- Caché implementada: `InventarioDDD.Infrastructure/Cache` para optimizar lecturas.
+
+#### Capa de Presentación (5 puntos)
+- Controllers delgados: `InventarioDDD.API/Controllers` invocan casos de uso/handlers.
+- DTOs para entrada/salida: `InventarioDDD.Application/DTOs` y mapeos explícitos en handlers/controllers.
+- Validación en boundaries: manejo de errores en controllers y middleware, ver `InventarioDDD.API/Middleware/ExceptionHandlingMiddleware.cs`.
+
+Notas:
+- En todos los diagramas Mermaid, el dominio seleccionado está resaltado. Si necesitas ver las imágenes originales, consulta la carpeta `docs/` o los adjuntos del curso.
 
 ## 🔧 Solución de Problemas
 
@@ -220,9 +269,81 @@ El proyecto implementa **Domain-Driven Design (DDD)** con 4 capas:
 
 ---
 
-## � Diagramas del Dominio
+## 📈 Diagramas del Dominio
 
-### 1. Estructura Organizacional y Dominios
+### 0. Flujo de Gestión de Inventarios
+
+```mermaid
+flowchart TB
+    subgraph GI[Gestión de Inventarios]
+        AI[Administrador de Inventario]
+        PV[Proveedor]
+        OC[Orden de Compra]
+        RM[Recepción de Mercancía]
+        AU[Actualizar Inventario]
+        CS[Consultar Stock]
+        AL[Configurar Alertas]
+        GR[Generar Reportes]
+        CA[Contador/Auditor]
+        VF[Verificar Inventario Físico]
+        AD[Ajustar Discrepancias]
+        SB{Stock bajo?}
+        CT[Continuar]
+        GA[Generar Alerta]
+        NA[Notificar Administrador]
+        COC[Crear Orden de Compra]
+    end
+
+    subgraph EX[Contextos Externos]
+        SC[Sistema de Cocina]
+        CI[Consumir Insumos]
+        DS[Descontar del Stock]
+    end
+
+    AI --> CS
+    AI --> AL
+    AI --> GR
+    AI --> RM
+    AI --> OC
+    RM --> AU
+
+    AI --> PV --> OC --> RM
+    CA --> VF --> AD --> AU
+
+    SC --> CI --> DS --> SB
+    SB -- No --> CT
+    SB -- Sí --> GA --> NA --> COC --> OC
+
+    classDef actor fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
+    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
+    class AI,CA actor;
+    class SC external;
+```
+
+### 1. Flujo Organizacional (Resumen)
+
+```mermaid
+flowchart LR
+    AI["Administrador"]:::role
+    SC["Sistema de Cocina"]:::external
+    CA["Auditor"]:::role
+
+    AI --> REI["Registrar Entrada"] --> PV["Proveedor"] --> OC["Orden de Compra"] --> RM["Recepción"] --> AU["Actualizar Inventario"]
+    AI --> CS["Consultar Stock"]
+    AI --> AL["Configurar Alertas"]
+    AI --> GR["Generar Reportes"]
+    CA --> VIF["Verificar Físico"] --> AD["Ajustar Discrepancias"] --> AU
+    SC --> CI["Consumir Insumos"] --> DS["Descontar Stock"]
+    DS --> SB{"¿Stock Bajo?"}
+    SB -- No --> CT["Continuar"]
+    SB -- Sí --> GA["Generar Alerta"]:::alert --> NA["Notificar Admin"] --> COC["Crear OC"] --> OC
+
+    classDef role fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
+    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
+    classDef alert fill:#FFEBEE,stroke:#C62828,color:#B71C1C;
+```
+
+### 2. Estructura Organizacional y Dominios
 
 ```mermaid
 graph TB
@@ -578,7 +699,7 @@ sequenceDiagram
     end
 
     rect rgb(245, 255, 230)
-        Note over 👤,📢: � Flujo 3: Recepción de Mercancía
+    Note over 👤,📢: 🔄 Flujo 3: Recepción de Mercancía
         👤->>🌐: PUT /api/ordenes-compra/OC-001/recibir
         🌐->>📋: Recibir(cantidadRecibida, fechaVencimiento)
         📋->>📋: 📦 Estado = Recibida
@@ -601,6 +722,26 @@ sequenceDiagram
             📢->>👤: ⚠️ "Lote LOT-001 vence en 3 días"
         end
     end
+```
+
+### 2.1 Diagrama Entidad-Relación (ERD) - Resumen
+
+Para el detalle completo del modelo de datos, consulta `docs/README.md` (sección "Diagrama Entidad-Relación"). Aquí un resumen de entidades clave:
+
+```mermaid
+erDiagram
+    INGREDIENTE { string id PK; string categoriaId FK; decimal stockActual; decimal stockMinimo; decimal stockMaximo }
+    LOTE { string id PK; string ingredienteId FK; decimal cantidad; date fechaVencimiento; string proveedorId FK }
+    ORDEN_COMPRA { string id PK; string proveedorId FK; date fechaSolicitud; string estado }
+    LINEA_ORDEN { string id PK; string ordenCompraId FK; string ingredienteId FK; decimal cantidad; decimal precioUnitario }
+    PROVEEDOR { string id PK; string nombre }
+    MOVIMIENTO_INVENTARIO { string id PK; string ingredienteId FK; string loteId FK; string tipoMovimiento; decimal cantidad; datetime fechaHora }
+
+    INGREDIENTE ||--o{ LOTE : tiene
+    INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : registra
+    ORDEN_COMPRA ||--o{ LINEA_ORDEN : contiene
+    LINEA_ORDEN }o--|| INGREDIENTE : referencia
+    LOTE }o--|| PROVEEDOR : proviene_de
 ```
 
 **Domain Events Implementados**:
@@ -740,7 +881,7 @@ classDiagram
 
 ---
 
-## �📁 Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
 ddd-inventario-main/

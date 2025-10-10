@@ -10,10 +10,60 @@
 6. [Objetos de Valor](#6-objetos-de-valor)
 7. [Triggers y Eventos del Dominio](#7-triggers-y-eventos-del-dominio)
 8. [Servicios del Dominio](#8-servicios-del-dominio)
+9. [Rúbrica de Entrega](#9-rúbrica-de-entrega)
 
 ---
 
 ## 1. Estructura Organizacional y Dominios
+
+### Flujo de Gestión de Inventarios
+
+```mermaid
+flowchart TB
+    subgraph GI[Gestión de Inventarios]
+        AI[Administrador de Inventario]
+        PV[Proveedor]
+        OC[Orden de Compra]
+        RM[Recepción de Mercancía]
+        AU[Actualizar Inventario]
+        CS[Consultar Stock]
+        AL[Configurar Alertas]
+        GR[Generar Reportes]
+        CA[Contador/Auditor]
+        VF[Verificar Inventario Físico]
+        AD[Ajustar Discrepancias]
+        SB{Stock bajo?}
+        CT[Continuar]
+        GA[Generar Alerta]
+        NA[Notificar Administrador]
+        COC[Crear Orden de Compra]
+    end
+
+    subgraph EX[Contextos Externos]
+        SC[Sistema de Cocina]
+        CI[Consumir Insumos]
+        DS[Descontar del Stock]
+    end
+
+    AI --> CS
+    AI --> AL
+    AI --> GR
+    AI --> RM
+    AI --> OC
+    RM --> AU
+
+    AI --> PV --> OC --> RM
+    CA --> VF --> AD --> AU
+
+    SC --> CI --> DS --> SB
+    SB -- No --> CT
+    SB -- Sí --> GA --> NA --> COC --> OC
+
+    classDef actor fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
+    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
+    class AI,CA actor;
+    class SC external;
+```
 
 ```mermaid
 graph TB
@@ -77,6 +127,53 @@ graph TB
 5. **🤝 Proveedores** - Supporting Domain
 
 ---
+
+## 9. Rúbrica de Entrega
+
+Este documento está estructurado para cubrir los puntos evaluados en la rúbrica.
+
+### Aspectos de Diseño (25 puntos)
+
+- Flujo de estructura organizacional por afinidad y dominio seleccionado pintado:
+    - Ver sección [Estructura Organizacional y Dominios](#1-estructura-organizacional-y-dominios); el dominio de Inventario está resaltado en verde.
+- Dominios con entidades y agregados:
+    - Ver sección [Entidades y Agregados](#3-entidades-y-agregados) con agregados y entidades relacionadas.
+- Bounded Context con flujo de entidades, agregados, servicios y APIs:
+    - Ver sección [Bounded Context](#4-bounded-context) con API/Application/Domain/Infrastructure y contextos externos.
+- Lenguaje Ubicuo (glosario):
+    - Ver sección [Lenguaje Ubicuo - Glosario](#5-lenguaje-ubicuo---glosario).
+- Objetos de Valor del dominio seleccionado:
+    - Ver sección [Objetos de Valor](#6-objetos-de-valor) con diagramas y ejemplos de implementación.
+- Triggers y Eventos del dominio seleccionado:
+    - Ver sección [Triggers y Eventos del Dominio](#7-triggers-y-eventos-del-dominio).
+- Servicios del Dominio:
+    - Ver sección [Servicios del Dominio](#8-servicios-del-dominio).
+
+### Aspectos de Implementación (25 puntos)
+
+#### Capa de Dominio (10)
+- Entidades enriquecidas con comportamientos: ver `InventarioDDD.Domain/Entities` y agregados en `InventarioDDD.Domain/Aggregates`.
+- Value Objects inmutables con validaciones en constructor: ver `InventarioDDD.Domain/ValueObjects`.
+- Agregados con consistencia: raíces (`Ingrediente`, `OrdenDeCompra`, `Lote`) como únicos puntos de acceso.
+- Domain Events en pasado: ver `InventarioDDD.Domain/Events`.
+- Interfaces de dominio: `InventarioDDD.Domain/Interfaces`.
+
+#### Capa de Aplicación (5)
+- Use cases específicos: Commands/Queries en `InventarioDDD.Application` (cada uno realiza una acción única).
+- Orquestación: Handlers coordinan servicios; no contienen lógica de negocio.
+- Transacciones: operaciones que involucran múltiples agregados se mantienen consistentes vía repositorios/DbContext.
+
+#### Capa de Infraestructura (5)
+- Repositorios implementan interfaces del dominio: `InventarioDDD.Infrastructure/Repositories`.
+- ORM (EF Core) sólo en infraestructura: `InventarioDDD.Infrastructure/Persistence` y `Configuration`.
+- Caché: `InventarioDDD.Infrastructure/Cache`.
+
+#### Capa de Presentación (5)
+- Controllers delgados: `InventarioDDD.API/Controllers` invocan handlers.
+- DTOs para entrada/salida: `InventarioDDD.Application/DTOs` y mapeos explícitos.
+- Validación de datos en boundaries: middleware y manejo de errores en controllers.
+
+Nota: Los diagramas originales compartidos en la entrega están reflejados como Mermaid en este documento y el README principal; el dominio seleccionado está resaltado para cumplir la rúbrica.
 
 ## 2. Dominio Seleccionado: Gestión de Inventario
 

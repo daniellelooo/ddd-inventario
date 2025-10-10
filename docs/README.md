@@ -1,34 +1,4 @@
-
 # 📚 Documentación DDD - Sistema de Inventario de Restaurante
-
-## 0. Flujo Organizacional - Gestión de Inventarios
-
-```mermaid
-flowchart LR
-    %% Roles
-    AI["Administrador"]:::role
-    SC["Sistema de Cocina"]:::external
-    CA["Auditor"]:::role
-
-    %% Flujo principal
-    AI --> REI["Registrar Entrada"] --> PV["Proveedor"] --> OC["Orden de Compra"] --> RM["Recepción"] --> AU["Actualizar Inventario"]
-    AI --> CS["Consultar Stock"]
-    AI --> AL["Configurar Alertas"]
-    AI --> GR["Generar Reportes"]
-    CA --> VIF["Verificar Físico"] --> AD["Ajustar Discrepancias"] --> AU
-
-    %% Consumo y decisión
-    SC --> CI["Consumir Insumos"] --> DS["Descontar Stock"]
-    DS --> SB{"¿Stock Bajo?"}
-    SB -- No --> CT["Continuar"]
-    SB -- Sí --> GA["Generar Alerta"]:::alert --> NA["Notificar Admin"] --> COC["Crear OC"] --> OC
-
-    %% Estilos accesibles
-    classDef role fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
-    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
-    classDef alert fill:#FFEBEE,stroke:#C62828,color:#B71C1C;
-```
-
 
 ## 📋 Tabla de Contenidos
 
@@ -45,95 +15,57 @@ flowchart LR
 
 ## 1. Estructura Organizacional y Dominios
 
-
----
-
-### 1.1 Diagrama Entidad-Relación (ERD)
-
 ```mermaid
-erDiagram
-    CATEGORIA {
-        string id PK
-        string nombre
-        string descripcion
-    }
-    PRODUCTO {
-        string id PK
-        string nombre
-        string tipo
-    }
-    INGREDIENTE {
-        string id PK
-        string categoriaId FK
-        decimal stockActual
-        decimal stockMinimo
-        decimal stockMaximo
-        string unidadMedida
-        decimal precioPromedio
-    }
-    RECETA_ITEM {
-        string id PK
-        string productoId FK
-        string ingredienteId FK
-        decimal cantidad
-        string unidadMedida
-    }
-    MOVIMIENTO_INVENTARIO {
-        string id PK
-        string ingredienteId FK
-        string loteId FK
-        string tipoMovimiento
-        decimal cantidad
-        datetime fechaHora
-        string usuarioId
-        string referencia
-    }
-    LOTE {
-        string id PK
-        string ingredienteId FK
-        decimal cantidad
-        date fechaIngreso
-        date fechaVencimiento
-        string proveedorId
-        string estado
-    }
-    ORDEN_COMPRA {
-        string id PK
-        string proveedorId FK
-        date fechaSolicitud
-        date fechaEntregaEstimada
-        string estado
-        decimal montoTotal
-    }
-    LINEA_ORDEN {
-        string id PK
-        string ordenCompraId FK
-        string ingredienteId FK
-        decimal cantidadSolicitada
-        decimal cantidadRecibida
-        decimal precioUnitario
-    }
-    PROVEEDOR {
-        string id PK
-        string nombre
-        string contacto
-        string telefono
-        string email
-    }
+graph TB
+    subgraph RESTAURANTE["🏪 SISTEMA DE RESTAURANTE"]
+        subgraph OPS["🍽️ Gestión de Operaciones"]
+            A["📅 Reservas y Mesas"]
+            B["📝 Gestión de Pedidos"]
+            C["👥 Atención al Cliente"]
+        end
 
-    PRODUCTO ||--o{ RECETA_ITEM : tiene
-    INGREDIENTE ||--o{ RECETA_ITEM : "usado en"
-    CATEGORIA ||--o{ INGREDIENTE : "pertenece a"
-    INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : "registra"
-    INGREDIENTE ||--o{ LOTE : "tiene"
-    LOTE ||--o{ MOVIMIENTO_INVENTARIO : "afecta"
-    INGREDIENTE ||--o{ LINEA_ORDEN : "contiene"
-    ORDEN_COMPRA ||--o{ LINEA_ORDEN : "contiene"
-    PROVEEDOR ||--o{ ORDEN_COMPRA : "dirigida a"
-    LOTE ||--o{ ORDEN_COMPRA : "proviene de"
-    PROVEEDOR ||--o{ LOTE : "suministrado por"
+        subgraph INV["📦 Gestión de Inventario ⭐"]
+            D["🥗 Control de Ingredientes"]
+            E["📋 Órdenes de Compra"]
+            F["📦 Gestión de Lotes"]
+        end
+
+        subgraph RRHH["👔 Recursos Humanos"]
+            G["👨‍💼 Empleados"]
+            H["🕐 Turnos y Horarios"]
+            I["💰 Nómina"]
+        end
+
+        subgraph FIN["💳 Finanzas"]
+            J["🧾 Facturación"]
+            K["📊 Contabilidad"]
+            L["📈 Reportes Financieros"]
+        end
+
+        subgraph PROV["🤝 Proveedores"]
+            M["🏢 Gestión de Proveedores"]
+            N["⭐ Evaluación y Calidad"]
+            O["📄 Contratos"]
+        end
+    end
+
+    D -.->|usa| B
+    E -.->|solicita a| M
+    F -.->|almacena| D
+    B -.->|genera| J
+    G -.->|asignado a| H
+    M -.->|suministra| E
+
+    style INV fill:#4CAF50,stroke:#2E7D32,stroke-width:4px,color:#fff
+    style D fill:#66BB6A,stroke:#388E3C,stroke-width:3px,color:#fff
+    style E fill:#66BB6A,stroke:#388E3C,stroke-width:3px,color:#fff
+    style F fill:#66BB6A,stroke:#388E3C,stroke-width:3px,color:#fff
+    style RESTAURANTE fill:#F5F5F5,stroke:#9E9E9E,stroke-width:2px
+    style OPS fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style RRHH fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style FIN fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
+    style PROV fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
 ```
-
 
 
 ### Dominios Identificados por Afinidad:
@@ -141,50 +73,95 @@ erDiagram
 1. **🍽️ Gestión de Operaciones** - Core Domain para servicio al cliente
 2. **📦 Gestión de Inventario** - **DOMINIO SELECCIONADO** (Supporting Domain crítico)
 3. **👥 Recursos Humanos** - Supporting Domain
+4. **💰 Finanzas** - Generic Domain
+5. **🤝 Proveedores** - Supporting Domain
 
-### 1.2 Bounded Contexts y Servicios de Dominio
+---
+
+## 2. Dominio Seleccionado: Gestión de Inventario
+
+### 🎯 Objetivo del Dominio
+
+Controlar el stock de ingredientes del restaurante, gestionar órdenes de compra, rastrear lotes con fechas de vencimiento y mantener un historial de movimientos de inventario para garantizar disponibilidad continua y minimizar desperdicios.
+
+### 🔑 Casos de Uso Principales
+
+- ✅ Registrar consumo de ingredientes
+- ✅ Crear y aprobar órdenes de compra
+- ✅ Recibir mercancía y crear lotes
+- ✅ Alertas de stock mínimo y reabastecimiento
+- ✅ Control de vencimientos (FEFO - First Expired, First Out)
+- ✅ Historial de movimientos de inventario
+
+---
+
+## 3. Entidades y Agregados
 
 ```mermaid
-flowchart LR
-    subgraph PEDIDOS["Bounded Context: PEDIDOS"]
-        SCP[ServicioDePedidos]
-    end
-    subgraph COCINA["Bounded Context: COCINA"]
-        SCC[ServicioDeCocina]
-    end
-    subgraph INVENTARIO["Bounded Context: INVENTARIO"]
-        SCons[ServicioDeConsumo]
-        SRec[ServicioDeRecepcion]
-        SAud[ServicioDeAuditoria]
-        SRot[ServicioDeRotacion]
-        SInv[ServicioDeInventario]
-    end
-    subgraph COMPRAS["Bounded Context: COMPRAS"]
-        SReab[ServicioDeReabastecimiento]
-        SProv[ServicioDeProveedores]
+graph TB
+    subgraph DOMAIN["📦 DOMINIO: GESTIÓN DE INVENTARIO"]
+        
+        subgraph AGG1["🧱 Agregado: Ingrediente"]
+            IA["<b>🥗 INGREDIENTE</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>📏 UnidadMedida: VO<br/>📊 CantidadEnStock: decimal<br/>⬇️ StockMinimo: decimal<br/>⬆️ StockMaximo: decimal<br/>🏷️ CategoriaId: Guid"]
+            
+            CAT["<b>🏷️ Categoría</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>✅ Activa: bool"]
+            
+            MI["<b>📊 MovimientoInventario</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔀 TipoMovimiento: Enum<br/>📦 Cantidad: decimal<br/>📅 FechaMovimiento: DateTime<br/>💬 Motivo: string<br/>🏷️ IngredienteId: Guid"]
+        end
+
+        subgraph AGG2["📋 Agregado: Orden de Compra"]
+            OCA["<b>📋 ORDEN DE COMPRA</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔢 Numero: string<br/>🥗 IngredienteId: Guid<br/>🏢 ProveedorId: Guid<br/>📦 Cantidad: decimal<br/>💵 PrecioUnitario: decimal<br/>🚦 Estado: Enum<br/>📅 FechaCreacion: DateTime<br/>📆 FechaEsperada: DateTime"]
+            
+            PROV["<b>🏢 Proveedor</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>🏛️ NIT: string<br/>📞 Contacto: string<br/>📍 Direccion: VO<br/>✅ Activo: bool"]
+        end
+
+        subgraph AGG3["📦 Agregado: Lote"]
+            LA["<b>📦 LOTE</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔖 Codigo: string<br/>🥗 IngredienteId: Guid<br/>🏢 ProveedorId: Guid<br/>📊 CantidadInicial: decimal<br/>📦 CantidadDisponible: decimal<br/>⏰ FechaVencimiento: DateTime<br/>📅 FechaRecepcion: DateTime<br/>💵 PrecioUnitario: decimal"]
+        end
     end
 
-    %% Interacciones clave (simplificadas)
-    SCP -. Evento: PedidoCreado .-> SCons
-    SCC -. Consulta: Disponibilidad .-> SInv
-    SCons -. Evento: IngredientesConsumidos .-> SInv
-    SRec -. Evento: StockActualizado .-> SInv
-    SInv -. Evento: AlertaStockBajo .-> SReab
-    SReab -. Comando: CrearOrden .-> SProv
-    SInv -. Lectura .-> SAud
-    SInv -. Lectura .-> SRot
+    IA -->|contiene| CAT
+    IA -->|registra| MI
+    OCA -->|solicita a| PROV
+    LA -.->|pertenece a| IA
+    LA -.->|proviene de| PROV
+    OCA -.->|solicita| IA
 
-    %% Estilos
-    classDef inv fill:#FFFDE7,stroke:#F9A825,stroke-width:2px,color:#5D4037;
-    classDef compras fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20;
-    classDef cocina fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#BF360C;
-    classDef pedidos fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D47A1;
-    class SInv,SCons,SRec,SAud,SRot inv;
-    class SReab,SProv compras;
-    class SCC cocina;
-    class SCP pedidos;
+    style DOMAIN fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
+    style AGG1 fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style AGG2 fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+    style AGG3 fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+    style IA fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style OCA fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
+    style LA fill:#9C27B0,stroke:#4A148C,stroke-width:3px,color:#fff
+    style CAT fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
+    style MI fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
+    style PROV fill:#BBDEFB,stroke:#1565C0,stroke-width:2px
 ```
 
+### Agregados Identificados:
+
+#### 🧱 **Agregado: Ingrediente** (Aggregate Root)
+
+- **Root Entity**: `Ingrediente`
+- **Child Entities**: `Categoría`, `MovimientoInventario`
+- **Invariantes**:
+  - Stock nunca puede ser negativo
+  - Stock máximo debe ser mayor que stock mínimo
+  - Todo ingrediente debe tener una categoría activa
+
+#### 📋 **Agregado: Orden de Compra** (Aggregate Root)
+
+- **Root Entity**: `OrdenDeCompra`
+- **Child Entities**: `Proveedor`
+- **Invariantes**:
+  - Solo órdenes en estado "Pendiente" pueden ser aprobadas
+  - Solo órdenes "Aprobadas" pueden ser recibidas
+  - La cantidad debe ser mayor que cero
+
+#### 📦 **Agregado: Lote** (Aggregate Root)
+
+- **Root Entity**: `Lote`
 - **Invariantes**:
   - Cantidad disponible no puede exceder cantidad inicial
   - Fecha de vencimiento debe ser futura al momento de recepción
@@ -337,97 +314,79 @@ graph TB
 
 ### 💎 Value Objects del Dominio
 
-
-### 1.3 Modelo de Dominio (UML simplificado)
-
 ```mermaid
 classDiagram
-    class Ingrediente {
-        +Guid Id
-        +string Nombre
-        +Categoria Categoria
-        +UnidadDeMedida Unidad
-        +decimal StockActual
-        +decimal StockMinimo
-        +decimal StockMaximo
-        +List~Lote~ Lotes
-        +agregarLote(Lote)
-        +consumir(decimal, motivo)
-        +tieneStockBajo() bool
-        +requiereReabastecimiento() bool
-    }
-    class Lote {
-        +Guid Id
-        +string Codigo
-        +Ingrediente Ingrediente
-        +Proveedor Proveedor
-        +decimal CantidadInicial
-        +decimal CantidadDisponible
-        +DateTime FechaVencimiento
-        +DateTime FechaRecepcion
-        +bool estaVencido() bool
-        +bool estaProximoAVencer(int) bool
-    }
-    class Categoria {
-        +Guid Id
-        +string Nombre
-        +string Descripcion
-        +bool Activa
-    }
-    class Proveedor {
-        +Guid Id
-        +string Nombre
-        +DireccionProveedor Direccion
-        +bool Activo
-    }
-    class OrdenDeCompra {
-        +Guid Id
-        +Proveedor Proveedor
-        +DateTime FechaSolicitud
-        +DateTime FechaEntregaEstimada
-        +string Estado
-        +List~LineaOrden~ Lineas
-        +aprobar()
-        +recibir()
-    }
-    class LineaOrden {
-        +Guid Id
-        +Ingrediente Ingrediente
-        +decimal CantidadSolicitada
-        +decimal CantidadRecibida
-        +decimal PrecioUnitario
-    }
-    class MovimientoInventario {
-        +Guid Id
-        +Ingrediente Ingrediente
-        +Lote Lote
-        +string TipoMovimiento
-        +decimal Cantidad
-        +DateTime FechaHora
-        +string UsuarioId
-        +string Referencia
-    }
     class UnidadDeMedida {
+        <<Value Object>> 📏
         +string Nombre
         +string Simbolo
+        +Equals(other) bool
+        +GetHashCode() int
+        +ToString() string
     }
+
+    class Cantidad {
+        <<Value Object>> 📊
+        +decimal Valor
+        +UnidadDeMedida UnidadMedida
+        +Sumar(otra) Cantidad
+        +Restar(otra) Cantidad
+        +EsMayorQue(otra) bool
+        +EsMenorQue(otra) bool
+        +EsValido() bool
+    }
+
     class DireccionProveedor {
+        <<Value Object>> 📍
         +string Calle
         +string Ciudad
         +string Pais
         +string CodigoPostal
+        +ToString() string
+        +Equals(other) bool
     }
 
-    Ingrediente --> Categoria
-    Ingrediente --> Lote
-    Lote --> Proveedor
-    Lote --> Ingrediente
-    OrdenDeCompra --> Proveedor
-    OrdenDeCompra --> LineaOrden
-    LineaOrden --> Ingrediente
-    MovimientoInventario --> Ingrediente
-    MovimientoInventario --> Lote
-    Proveedor --> DireccionProveedor
+    class Dinero {
+        <<Value Object>> 💵
+        +decimal Monto
+        +string Moneda
+        +Sumar(otro) Dinero
+        +Restar(otro) Dinero
+        +Multiplicar(factor) Dinero
+        +EsMayorQue(otro) bool
+    }
+
+    class RangoFechas {
+        <<Value Object>> 📅
+        +DateTime FechaInicio
+        +DateTime FechaFin
+        +Contiene(fecha) bool
+        +DiasEntre() int
+        +EsValido() bool
+    }
+
+    class ContactoProveedor {
+        <<Value Object>> 📞
+        +string NombreContacto
+        +string Telefono
+        +string Email
+        +Equals(other) bool
+        +EsValido() bool
+    }
+
+    Cantidad --> UnidadDeMedida : usa
+    
+    note for UnidadDeMedida "Ejemplos:\n- Kilogramo (kg)\n- Litro (L)\n- Unidad (un)\n- Gramo (g)"
+    note for Cantidad "Inmutable\nNo permite valores negativos"
+    note for DireccionProveedor "Usado en Proveedor\nPara direcciones de entrega"
+    note for Dinero "Soporta múltiples monedas\n(COP, USD, EUR)"
+
+    style UnidadDeMedida fill:#FFE0B2,stroke:#F57C00,stroke-width:3px
+    style Cantidad fill:#C5E1A5,stroke:#689F38,stroke-width:3px
+    style DireccionProveedor fill:#B3E5FC,stroke:#0277BD,stroke-width:3px
+    style Dinero fill:#F8BBD0,stroke:#C2185B,stroke-width:3px
+    style RangoFechas fill:#D1C4E9,stroke:#5E35B1,stroke-width:3px
+    style ContactoProveedor fill:#FFCCBC,stroke:#E64A19,stroke-width:3px
 ```
 
 #### 🔹 **UnidadDeMedida**

@@ -130,23 +130,6 @@ namespace InventarioDDD.API.Controllers
                 return StatusCode(500, new { message = "Error al crear el ingrediente", error = ex.Message });
             }
         }
-        /// <summary>
-        /// Elimina un ingrediente por id
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(Guid id)
-        {
-            try
-            {
-                await _ingredienteRepository.EliminarAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar ingrediente");
-                return StatusCode(500, new { message = "Error al eliminar ingrediente", error = ex.Message });
-            }
-        }
     }
 
     public class CrearIngredienteRequest

@@ -26,7 +26,7 @@ export const ingredientesService = {
 
   getParaReabastecer: async (): Promise<IngredienteParaReabastecer[]> => {
     const response = await apiClient.get('/ingredientes/reabastecer');
-    return response.data.data || response.data;
+    return response.data;
   },
 
   create: async (ingrediente: Partial<Ingrediente>): Promise<Ingrediente> => {
@@ -58,92 +58,12 @@ export const lotesService = {
 
   getProximosVencer: async (dias: number = 30): Promise<LoteProximoVencer[]> => {
     const response = await apiClient.get(`/inventario/lotes/proximos-vencer?diasAnticipacion=${dias}`);
-    const raw = response.data?.data ?? response.data ?? [];
-    // Normalizar propiedades del backend (DiasHastaVencimiento vs diasParaVencer, nombres, etc.)
-    return (Array.isArray(raw) ? raw : []).map((l: any) => ({
-      id: String(l.id ?? l.Id ?? ''),
-      codigo: String(l.codigo ?? l.Codigo ?? ''),
-      ingredienteNombre: String(l.ingredienteNombre ?? l.IngredienteNombre ?? ''),
-      cantidadDisponible: Number(l.cantidadDisponible ?? l.CantidadDisponible ?? l.cantidad ?? 0),
-      fechaVencimiento: String(l.fechaVencimiento ?? l.FechaVencimiento ?? ''),
-      diasParaVencer: Number(l.diasParaVencer ?? l.DiasHastaVencimiento ?? 0),
-      proveedorNombre: String(l.proveedorNombre ?? l.ProveedorNombre ?? ''),
-      precioUnitario: Number(l.precioUnitario ?? l.PrecioUnitario ?? 0),
-      moneda: String(l.moneda ?? l.Moneda ?? ''),
-    }));
+    return response.data.data || response.data;
   },
 
   getByIngrediente: async (ingredienteId: string): Promise<Lote[]> => {
     const response = await apiClient.get(`/lotes/ingrediente/${ingredienteId}`);
     return response.data;
-  },
-
-  create: async (lote: Partial<Lote>): Promise<Lote> => {
-    // No hay endpoint directo para crear lotes; se crea vía orden de compra -> aprobar -> recibir
-    // Requiere: ingredienteId, proveedorId, cantidadInicial, fechaVencimiento, codigo
-    if (!lote.ingredienteId || !lote.proveedorId || !lote.cantidadInicial || !lote.fechaVencimiento) {
-      throw new Error('Faltan datos para crear el lote (ingrediente, proveedor, cantidad y fecha de vencimiento son requeridos)');
-    }
-
-    const codigoLote = lote.codigo || `Lote-${Date.now()}`;
-    const fechaEsperada = new Date().toISOString().slice(0, 10);
-
-    // 1) Crear orden de compra con un único detalle
-    const command: CrearOrdenDeCompraCommand = {
-      proveedorId: lote.proveedorId,
-      fechaEsperada,
-      detalles: [
-        {
-          ingredienteId: lote.ingredienteId,
-          cantidad: Number(lote.cantidadInicial),
-          precioUnitario: 0,
-          moneda: 'BOB',
-        },
-      ],
-    };
-
-    const ordenId = await ordenesCompraService.crear(command);
-
-    // 2) Aprobar la orden
-    await ordenesCompraService.aprobar(ordenId, 'ui');
-
-    // 3) Recibir la orden para crear el lote
-    const recibirResp = await ordenesCompraService.recibir(ordenId, {
-      lotes: [
-        {
-          ingredienteId: lote.ingredienteId,
-          codigoLote,
-          cantidad: Number(lote.cantidadInicial),
-          fechaVencimiento: lote.fechaVencimiento,
-        }
-      ]
-    });
-
-    // 4) Consultar lotes y devolver el recién creado (por código), con reintentos cortos
-    const loteId = recibirResp?.data?.loteId;
-    const normalizeDate = (d: string) => (d ? new Date(d).toISOString().slice(0, 10) : d);
-    const targetDate = normalizeDate(String(lote.fechaVencimiento));
-
-    const retries = 3;
-    for (let i = 0; i < retries; i++) {
-      const all = await lotesService.getAll();
-      let creado = all.find((l) => l.codigo === codigoLote);
-      if (!creado && loteId) {
-        creado = all.find((l) => l.id === loteId);
-      }
-      if (!creado) {
-        creado = all.find(
-          (l) => l.ingredienteId === lote.ingredienteId && normalizeDate(String(l.fechaVencimiento)) === targetDate
-        );
-      }
-      if (creado) return creado;
-      // pequeña espera entre intentos (no bloqueante real; aquí solo reintenta sin delay)
-    }
-    throw new Error('Lote creado pero no se pudo recuperar la información');
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/lotes/${id}`);
   },
 };
 
@@ -196,24 +116,17 @@ export const ordenesCompraService = {
     return response.data.data || response.data;
   },
 
-  crear: async (command: CrearOrdenDeCompraCommand): Promise<string> => {
+  crear: async (command: CrearOrdenDeCompraCommand): Promise<OrdenDeCompra> => {
     const response = await apiClient.post('/ordenescompra', command);
-    // Esperamos { success, message, data: { ordenId } } o variantes
-    const payload = response.data as any;
-    const ordenId = payload?.data?.ordenId || payload?.ordenId || payload?.id;
-    if (!ordenId) {
-      throw new Error('No se pudo obtener el ID de la orden de compra creada');
-    }
-    return String(ordenId);
+    return response.data;
   },
 
   aprobar: async (ordenId: string, usuarioId: string): Promise<void> => {
     await apiClient.post(`/ordenescompra/${ordenId}/aprobar`, { usuarioId });
   },
 
-  recibir: async (ordenId: string, data: any): Promise<any> => {
-    const response = await apiClient.post(`/ordenescompra/${ordenId}/recibir`, data);
-    return response.data; // { success, message, data: { loteId } }
+  recibir: async (ordenId: string, data: any): Promise<void> => {
+    await apiClient.post(`/ordenescompra/${ordenId}/recibir`, data);
   },
 
   cancelar: async (ordenId: string): Promise<void> => {
@@ -278,22 +191,12 @@ export const categoriasService = {
 // ===== DASHBOARD =====
 export const dashboardService = {
   getStats: async () => {
-    const results = await Promise.allSettled([
+    const [ingredientes, bajoStock, lotesVencer, ordenesPendientes] = await Promise.all([
       ingredientesService.getAll(),
       ingredientesService.getParaReabastecer(),
       lotesService.getProximosVencer(7),
       ordenesCompraService.getPendientes(),
     ]);
-
-    const safe = (idx: number) => {
-      const r = results[idx];
-      return r.status === 'fulfilled' ? r.value : [];
-    };
-
-    const ingredientes = safe(0) as Ingrediente[];
-    const bajoStock = safe(1) as IngredienteParaReabastecer[];
-    const lotesVencer = safe(2) as LoteProximoVencer[];
-    const ordenesPendientes = safe(3) as OrdenDeCompra[];
 
     return {
       totalIngredientes: ingredientes.length,

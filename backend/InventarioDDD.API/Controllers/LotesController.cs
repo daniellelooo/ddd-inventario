@@ -85,22 +85,5 @@ namespace InventarioDDD.API.Controllers
                 return StatusCode(500, new { message = "Error al obtener lotes", error = ex.Message });
             }
         }
-        /// <summary>
-        /// Elimina un lote por id
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(Guid id)
-        {
-            try
-            {
-                await _loteRepository.EliminarAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar lote");
-                return StatusCode(500, new { message = "Error al eliminar lote", error = ex.Message });
-            }
-        }
     }
 }

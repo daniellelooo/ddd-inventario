@@ -38,39 +38,13 @@ namespace InventarioDDD.Domain.Aggregates
         }
 
         /// <summary>
-        /// Recibe la orden y crea los lotes correspondientes usando datos externos (código, cantidad, fecha)
-        /// </summary>
-        public void RecibirOrdenConLotes(List<(string CodigoLote, decimal Cantidad, DateTime FechaVencimiento)> lotes, DateTime? fechaRecepcion = null)
-        {
-            ValidarRecepcion();
-            if (lotes == null || lotes.Count == 0)
-                throw new ArgumentException("Debe especificar al menos un lote para la recepción");
-
-            // Solo se permite un lote por orden en este dominio (ajustar si se permite más)
-            var loteData = lotes[0];
-            if (loteData.Cantidad != _ordenDeCompra.Cantidad.Valor)
-                throw new InvalidOperationException("La cantidad del lote no coincide con la cantidad de la orden");
-
-            var lote = new Entities.Lote(
-                loteData.CodigoLote,
-                _ordenDeCompra.IngredienteId,
-                _ordenDeCompra.ProveedorId,
-                loteData.Cantidad,
-                new ValueObjects.FechaVencimiento(loteData.FechaVencimiento),
-                _ordenDeCompra.PrecioUnitario,
-                _ordenDeCompra.Id
-            );
-            _lotesRecibidos.Add(lote);
-            _ordenDeCompra.MarcarRecibida(fechaRecepcion);
-        }
-
-        /// <summary>
-        /// Recibe la orden y crea el lote con datos estimados (compatibilidad con servicios existentes)
+        /// Recibe la orden y crea los lotes correspondientes
         /// </summary>
         public void RecibirOrden(DateTime? fechaRecepcion = null)
         {
             ValidarRecepcion();
 
+            // Crear lote con la cantidad recibida
             var lote = new Lote(
                 GenerarCodigoLote(),
                 _ordenDeCompra.IngredienteId,

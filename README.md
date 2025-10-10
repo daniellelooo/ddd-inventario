@@ -35,7 +35,7 @@ Sistema de gestión de inventario para restaurantes implementado con **Domain-Dr
 
 ### Invariantes Críticas
 
-🔒 **Stock nunca puede ser negativo**  
+� **Stock nunca puede ser negativo**  
 🔒 **Solo órdenes aprobadas pueden ser recibidas**  
 🔒 **Cantidad disponible de lote ≤ cantidad inicial**  
 🔒 **Fecha de vencimiento debe ser futura al crear lote**  
@@ -220,32 +220,9 @@ El proyecto implementa **Domain-Driven Design (DDD)** con 4 capas:
 
 ---
 
-## 📈 Diagramas del Dominio
+## � Diagramas del Dominio
 
-### 1. Flujo Organizacional (Resumen)
-
-```mermaid
-flowchart LR
-    AI["Administrador"]:::role
-    SC["Sistema de Cocina"]:::external
-    CA["Auditor"]:::role
-
-    AI --> REI["Registrar Entrada"] --> PV["Proveedor"] --> OC["Orden de Compra"] --> RM["Recepción"] --> AU["Actualizar Inventario"]
-    AI --> CS["Consultar Stock"]
-    AI --> AL["Configurar Alertas"]
-    AI --> GR["Generar Reportes"]
-    CA --> VIF["Verificar Físico"] --> AD["Ajustar Discrepancias"] --> AU
-    SC --> CI["Consumir Insumos"] --> DS["Descontar Stock"]
-    DS --> SB{"¿Stock Bajo?"}
-    SB -- No --> CT["Continuar"]
-    SB -- Sí --> GA["Generar Alerta"]:::alert --> NA["Notificar Admin"] --> COC["Crear OC"] --> OC
-
-    classDef role fill:#E3F2FD,stroke:#1565C0,color:#0D47A1;
-    classDef external fill:#FFF3E0,stroke:#F57C00,color:#BF360C;
-    classDef alert fill:#FFEBEE,stroke:#C62828,color:#B71C1C;
-```
-
-### 2. Estructura Organizacional y Dominios
+### 1. Estructura Organizacional y Dominios
 
 ```mermaid
 graph TB
@@ -601,7 +578,7 @@ sequenceDiagram
     end
 
     rect rgb(245, 255, 230)
-    Note over 👤,📢: 🔄 Flujo 3: Recepción de Mercancía
+        Note over 👤,📢: � Flujo 3: Recepción de Mercancía
         👤->>🌐: PUT /api/ordenes-compra/OC-001/recibir
         🌐->>📋: Recibir(cantidadRecibida, fechaVencimiento)
         📋->>📋: 📦 Estado = Recibida
@@ -624,26 +601,6 @@ sequenceDiagram
             📢->>👤: ⚠️ "Lote LOT-001 vence en 3 días"
         end
     end
-```
-
-### 2.1 Diagrama Entidad-Relación (ERD) - Resumen
-
-Para el detalle completo del modelo de datos, consulta `docs/README.md` (sección "Diagrama Entidad-Relación"). Aquí un resumen de entidades clave:
-
-```mermaid
-erDiagram
-    INGREDIENTE { string id PK; string categoriaId FK; decimal stockActual; decimal stockMinimo; decimal stockMaximo }
-    LOTE { string id PK; string ingredienteId FK; decimal cantidad; date fechaVencimiento; string proveedorId FK }
-    ORDEN_COMPRA { string id PK; string proveedorId FK; date fechaSolicitud; string estado }
-    LINEA_ORDEN { string id PK; string ordenCompraId FK; string ingredienteId FK; decimal cantidad; decimal precioUnitario }
-    PROVEEDOR { string id PK; string nombre }
-    MOVIMIENTO_INVENTARIO { string id PK; string ingredienteId FK; string loteId FK; string tipoMovimiento; decimal cantidad; datetime fechaHora }
-
-    INGREDIENTE ||--o{ LOTE : tiene
-    INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : registra
-    ORDEN_COMPRA ||--o{ LINEA_ORDEN : contiene
-    LINEA_ORDEN }o--|| INGREDIENTE : referencia
-    LOTE }o--|| PROVEEDOR : proviene_de
 ```
 
 **Domain Events Implementados**:
@@ -783,7 +740,7 @@ classDiagram
 
 ---
 
-## 📁 Estructura del Proyecto
+## �📁 Estructura del Proyecto
 
 ```
 ddd-inventario-main/

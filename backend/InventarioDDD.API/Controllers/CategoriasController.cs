@@ -105,23 +105,6 @@ namespace InventarioDDD.API.Controllers
                 return StatusCode(500, new { message = "Error al crear la categoría", error = ex.Message });
             }
         }
-        /// <summary>
-        /// Elimina una categoría por id
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(Guid id)
-        {
-            try
-            {
-                await _categoriaRepository.EliminarAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar categoría");
-                return StatusCode(500, new { message = "Error al eliminar categoría", error = ex.Message });
-            }
-        }
     }
 
     public class CrearCategoriaRequest

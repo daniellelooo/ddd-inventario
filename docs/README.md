@@ -169,80 +169,81 @@ Este documento está estructurado para cubrir los puntos evaluados en la rúbric
 - ORM (EF Core) sólo en infraestructura: `InventarioDDD.Infrastructure/Persistence` y `Configuration`.
 - Caché: `InventarioDDD.Infrastructure/Cache`.
 
-#### Capa de Presentación (5)
-- Controllers delgados: `InventarioDDD.API/Controllers` invocan handlers.
-- DTOs para entrada/salida: `InventarioDDD.Application/DTOs` y mapeos explícitos.
-- Validación de datos en boundaries: middleware y manejo de errores en controllers.
-
-Nota: Los diagramas originales compartidos en la entrega están reflejados como Mermaid en este documento y el README principal; el dominio seleccionado está resaltado para cumplir la rúbrica.
-
-## 2. Dominio Seleccionado: Gestión de Inventario
-
-### 🎯 Objetivo del Dominio
-
-Controlar el stock de ingredientes del restaurante, gestionar órdenes de compra, rastrear lotes con fechas de vencimiento y mantener un historial de movimientos de inventario para garantizar disponibilidad continua y minimizar desperdicios.
-
-### 🔑 Casos de Uso Principales
-
-- ✅ Registrar consumo de ingredientes
-- ✅ Crear y aprobar órdenes de compra
-- ✅ Recibir mercancía y crear lotes
-- ✅ Alertas de stock mínimo y reabastecimiento
-- ✅ Control de vencimientos (FEFO - First Expired, First Out)
-- ✅ Historial de movimientos de inventario
-
----
-
-## 3. Entidades y Agregados
-
 ```mermaid
-graph TB
-    subgraph DOMAIN["📦 DOMINIO: GESTIÓN DE INVENTARIO"]
-        
-        subgraph AGG1["🧱 Agregado: Ingrediente"]
-            IA["<b>🥗 INGREDIENTE</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>📏 UnidadMedida: VO<br/>📊 CantidadEnStock: decimal<br/>⬇️ StockMinimo: decimal<br/>⬆️ StockMaximo: decimal<br/>🏷️ CategoriaId: Guid"]
-            
-            CAT["<b>🏷️ Categoría</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>✅ Activa: bool"]
-            
-            MI["<b>📊 MovimientoInventario</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔀 TipoMovimiento: Enum<br/>📦 Cantidad: decimal<br/>📅 FechaMovimiento: DateTime<br/>💬 Motivo: string<br/>🏷️ IngredienteId: Guid"]
-        end
+classDiagram
+    %% High-contrast styles
+    classDef vo fill:#ffffff,stroke:#333,color:#111,font-size:14px;
+    classDef note fill:#ffffff,stroke:#999,color:#333,font-size:13px;
 
-        subgraph AGG2["📋 Agregado: Orden de Compra"]
-            OCA["<b>📋 ORDEN DE COMPRA</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔢 Numero: string<br/>🥗 IngredienteId: Guid<br/>🏢 ProveedorId: Guid<br/>📦 Cantidad: decimal<br/>💵 PrecioUnitario: decimal<br/>🚦 Estado: Enum<br/>📅 FechaCreacion: DateTime<br/>📆 FechaEsperada: DateTime"]
-            
-            PROV["<b>🏢 Proveedor</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>🏛️ NIT: string<br/>📞 Contacto: string<br/>📍 Direccion: VO<br/>✅ Activo: bool"]
-        end
+    class UnidadDeMedida {
+        <<Value Object>>
+        +string Nombre
+        +string Simbolo
+        +Equals(other) bool
+        +GetHashCode() int
+        +ToString() string
+    }
 
-        subgraph AGG3["📦 Agregado: Lote"]
-            LA["<b>📦 LOTE</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔖 Codigo: string<br/>🥗 IngredienteId: Guid<br/>🏢 ProveedorId: Guid<br/>📊 CantidadInicial: decimal<br/>📦 CantidadDisponible: decimal<br/>⏰ FechaVencimiento: DateTime<br/>📅 FechaRecepcion: DateTime<br/>💵 PrecioUnitario: decimal"]
-        end
-    end
+    class Cantidad {
+        <<Value Object>>
+        +decimal Valor
+        +UnidadDeMedida UnidadMedida
+        +Sumar(otra) Cantidad
+        +Restar(otra) Cantidad
+        +EsMayorQue(otra) bool
+        +EsMenorQue(otra) bool
+        +EsValido() bool
+    }
 
-    IA -->|contiene| CAT
-    IA -->|registra| MI
-    OCA -->|solicita a| PROV
-    LA -.->|pertenece a| IA
-    LA -.->|proviene de| PROV
-    OCA -.->|solicita| IA
+    class DireccionProveedor {
+        <<Value Object>>
+        +string Calle
+        +string Ciudad
+        +string Pais
+        +string CodigoPostal
+        +ToString() string
+        +Equals(other) bool
+    }
 
-    style DOMAIN fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
-    style AGG1 fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style AGG2 fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
-    style AGG3 fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
-    style IA fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
-    style OCA fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
-    style LA fill:#9C27B0,stroke:#4A148C,stroke-width:3px,color:#fff
-    style CAT fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
-    style MI fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
-    style PROV fill:#BBDEFB,stroke:#1565C0,stroke-width:2px
+    class Dinero {
+        <<Value Object>>
+        +decimal Monto
+        +string Moneda
+        +Sumar(otro) Dinero
+        +Restar(otro) Dinero
+        +Multiplicar(factor) Dinero
+        +EsMayorQue(otro) bool
+    }
+
+    class RangoFechas {
+        <<Value Object>>
+        +DateTime FechaInicio
+        +DateTime FechaFin
+        +Contiene(fecha) bool
+        +DiasEntre() int
+        +EsValido() bool
+    }
+
+    class ContactoProveedor {
+        <<Value Object>>
+        +string NombreContacto
+        +string Telefono
+        +string Email
+        +Equals(other) bool
+        +EsValido() bool
+    }
+
+    Cantidad --> UnidadDeMedida : usa
+
+    %% Notes simplified
+    note for UnidadDeMedida "Ejemplos: Kilogramo (kg), Litro (L), Unidad (un), Gramo (g)"
+    note for Cantidad "Inmutable; no permite valores negativos"
+    note for DireccionProveedor "Usado en Proveedor: direcciones de entrega"
+    note for Dinero "Soporta múltiples monedas (COP, USD, EUR)"
+
+    %% Apply styles
+    class UnidadDeMedida,Cantidad,DireccionProveedor,Dinero,RangoFechas,ContactoProveedor vo;
 ```
-
-### Agregados Identificados:
-
-#### 🧱 **Agregado: Ingrediente** (Aggregate Root)
-
-- **Root Entity**: `Ingrediente`
-- **Child Entities**: `Categoría`, `MovimientoInventario`
 - **Invariantes**:
   - Stock nunca puede ser negativo
   - Stock máximo debe ser mayor que stock mínimo

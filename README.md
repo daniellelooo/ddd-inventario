@@ -574,8 +574,12 @@ graph TB
 
 ```mermaid
 classDiagram
+    %% High-contrast styles
+    classDef vo fill:#ffffff,stroke:#333,color:#111,font-size:14px;
+    classDef note fill:#ffffff,stroke:#999,color:#333,font-size:13px;
+
     class UnidadDeMedida {
-        <<Value Object>> 📏
+        <<Value Object>>
         +string Nombre
         +string Simbolo
         +Equals(other) bool
@@ -584,7 +588,7 @@ classDiagram
     }
 
     class Cantidad {
-        <<Value Object>> 📊
+        <<Value Object>>
         +decimal Valor
         +UnidadDeMedida UnidadMedida
         +Sumar(otra) Cantidad
@@ -595,7 +599,7 @@ classDiagram
     }
 
     class DireccionProveedor {
-        <<Value Object>> 📍
+        <<Value Object>>
         +string Calle
         +string Ciudad
         +string Pais
@@ -605,7 +609,7 @@ classDiagram
     }
 
     class Dinero {
-        <<Value Object>> 💵
+        <<Value Object>>
         +decimal Monto
         +string Moneda
         +Sumar(otro) Dinero
@@ -615,7 +619,7 @@ classDiagram
     }
 
     class RangoFechas {
-        <<Value Object>> 📅
+        <<Value Object>>
         +DateTime FechaInicio
         +DateTime FechaFin
         +Contiene(fecha) bool
@@ -624,7 +628,7 @@ classDiagram
     }
 
     class ContactoProveedor {
-        <<Value Object>> 📞
+        <<Value Object>>
         +string NombreContacto
         +string Telefono
         +string Email
@@ -633,18 +637,15 @@ classDiagram
     }
 
     Cantidad --> UnidadDeMedida : usa
-    
-    note for UnidadDeMedida "Ejemplos:\n- Kilogramo (kg)\n- Litro (L)\n- Unidad (un)\n- Gramo (g)"
-    note for Cantidad "Inmutable\nNo permite valores negativos"
-    note for DireccionProveedor "Usado en Proveedor\nPara direcciones de entrega"
-    note for Dinero "Soporta múltiples monedas\n(COP, USD, EUR)"
 
-    style UnidadDeMedida fill:#FFE0B2,stroke:#F57C00,stroke-width:3px
-    style Cantidad fill:#C5E1A5,stroke:#689F38,stroke-width:3px
-    style DireccionProveedor fill:#B3E5FC,stroke:#0277BD,stroke-width:3px
-    style Dinero fill:#F8BBD0,stroke:#C2185B,stroke-width:3px
-    style RangoFechas fill:#D1C4E9,stroke:#5E35B1,stroke-width:3px
-    style ContactoProveedor fill:#FFCCBC,stroke:#E64A19,stroke-width:3px
+    %% Notes simplified
+    note for UnidadDeMedida "Ejemplos: Kilogramo (kg), Litro (L), Unidad (un), Gramo (g)"
+    note for Cantidad "Inmutable; no permite valores negativos"
+    note for DireccionProveedor "Usado en Proveedor: direcciones de entrega"
+    note for Dinero "Soporta múltiples monedas (COP, USD, EUR)"
+
+    %% Apply styles
+    class UnidadDeMedida,Cantidad,DireccionProveedor,Dinero,RangoFechas,ContactoProveedor vo;
 ```
 
 **Características de Value Objects**:

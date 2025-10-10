@@ -171,10 +171,6 @@ Este documento está estructurado para cubrir los puntos evaluados en la rúbric
 
 ```mermaid
 classDiagram
-    %% High-contrast styles
-    classDef vo fill:#ffffff,stroke:#333,color:#111,font-size:14px;
-    classDef note fill:#ffffff,stroke:#999,color:#333,font-size:13px;
-
     class UnidadDeMedida {
         <<Value Object>>
         +string Nombre
@@ -235,14 +231,10 @@ classDiagram
 
     Cantidad --> UnidadDeMedida : usa
 
-    %% Notes simplified
-    note for UnidadDeMedida "Ejemplos: Kilogramo (kg), Litro (L), Unidad (un), Gramo (g)"
-    note for Cantidad "Inmutable; no permite valores negativos"
-    note for DireccionProveedor "Usado en Proveedor: direcciones de entrega"
-    note for Dinero "Soporta múltiples monedas (COP, USD, EUR)"
-
-    %% Apply styles
-    class UnidadDeMedida,Cantidad,DireccionProveedor,Dinero,RangoFechas,ContactoProveedor vo;
+    %% Notas: Ejemplos de UnidadDeMedida: kg, L, un, g
+    %% Cantidad es inmutable y no permite valores negativos
+    %% DireccionProveedor se usa en Proveedor para direcciones de entrega
+    %% Dinero soporta múltiples monedas (COP, USD, EUR)
 ```
 - **Invariantes**:
   - Stock nunca puede ser negativo

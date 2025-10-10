@@ -574,10 +574,6 @@ graph TB
 
 ```mermaid
 classDiagram
-    %% High-contrast styles
-    classDef vo fill:#ffffff,stroke:#333,color:#111,font-size:14px;
-    classDef note fill:#ffffff,stroke:#999,color:#333,font-size:13px;
-
     class UnidadDeMedida {
         <<Value Object>>
         +string Nombre
@@ -638,14 +634,10 @@ classDiagram
 
     Cantidad --> UnidadDeMedida : usa
 
-    %% Notes simplified
-    note for UnidadDeMedida "Ejemplos: Kilogramo (kg), Litro (L), Unidad (un), Gramo (g)"
-    note for Cantidad "Inmutable; no permite valores negativos"
-    note for DireccionProveedor "Usado en Proveedor: direcciones de entrega"
-    note for Dinero "Soporta múltiples monedas (COP, USD, EUR)"
-
-    %% Apply styles
-    class UnidadDeMedida,Cantidad,DireccionProveedor,Dinero,RangoFechas,ContactoProveedor vo;
+    %% Notas: Ejemplos de UnidadDeMedida: kg, L, un, g
+    %% Cantidad es inmutable y no permite valores negativos
+    %% DireccionProveedor se usa en Proveedor para direcciones de entrega
+    %% Dinero soporta múltiples monedas (COP, USD, EUR)
 ```
 
 **Características de Value Objects**:
@@ -802,7 +794,7 @@ erDiagram
 ```mermaid
 classDiagram
     class ServicioDeInventario {
-        <<Domain Service>> 📊
+        <<Domain Service>>
         +CalcularStockTotal(ingredienteId) decimal
         +IdentificarIngredientesParaReabastecer() List~Ingrediente~
         +CalcularValorTotalInventario() Dinero
@@ -811,7 +803,7 @@ classDiagram
     }
 
     class ServicioDeReabastecimiento {
-        <<Domain Service>> 🔄
+        <<Domain Service>>
         +CalcularPuntoReorden(ingredienteId) decimal
         +SugerirCantidadCompra(ingredienteId) decimal
         +GenerarOrdenesAutomaticas() Task
@@ -820,7 +812,7 @@ classDiagram
     }
 
     class ServicioDeRotacion {
-        <<Domain Service>> ⏰
+        <<Domain Service>>
         +ObtenerLotesProximosAVencer(dias) List~Lote~
         +ValidarRotacionFEFO(ingredienteId) bool
         +CalcularMermasPorVencimiento(periodo) decimal
@@ -829,7 +821,7 @@ classDiagram
     }
 
     class ServicioDeConsumo {
-        <<Domain Service>> 📝
+        <<Domain Service>>
         +RegistrarConsumo(ingredienteId, cantidad, motivo) Task
         +ValidarDisponibilidadParaConsumo(ingredienteId, cantidad) bool
         +AplicarFEFO(ingredienteId, cantidad) List~Lote~
@@ -837,7 +829,7 @@ classDiagram
     }
 
     class ServicioDeRecepcion {
-        <<Domain Service>> 📦
+        <<Domain Service>>
         +RecibirMercancia(ordenId, cantidadRecibida) Task
         +CrearLote(orden, cantidad, fechaVencimiento) Lote
         +GenerarCodigoLote() string
@@ -846,7 +838,7 @@ classDiagram
     }
 
     class ServicioDeAuditoria {
-        <<Domain Service>> 📋
+        <<Domain Service>>
         +RegistrarMovimiento(tipo, ingredienteId, cantidad) Task
         +ObtenerHistorial(filtros) List~Movimiento~
         +GenerarReporteMovimientos(periodo) Reporte
@@ -863,13 +855,6 @@ classDiagram
     ServicioDeRecepcion --> OrdenDeCompraRepository
     ServicioDeRecepcion --> LoteRepository
     ServicioDeAuditoria --> MovimientoRepository
-
-    style ServicioDeInventario fill:#81C784,stroke:#388E3C,stroke-width:3px,color:#fff
-    style ServicioDeReabastecimiento fill:#64B5F6,stroke:#1976D2,stroke-width:3px,color:#fff
-    style ServicioDeRotacion fill:#FFB74D,stroke:#F57C00,stroke-width:3px,color:#fff
-    style ServicioDeConsumo fill:#BA68C8,stroke:#7B1FA2,stroke-width:3px,color:#fff
-    style ServicioDeRecepcion fill:#4FC3F7,stroke:#0288D1,stroke-width:3px,color:#fff
-    style ServicioDeAuditoria fill:#FFD54F,stroke:#F9A825,stroke-width:3px,color:#fff
 ```
 
 **Domain Services - Responsabilidades**:

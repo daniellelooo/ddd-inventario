@@ -412,19 +412,55 @@ graph TB
 ### 💎 Value Objects del Dominio
 
 ```mermaid
-classDiagram
-    class UnidadDeMedida {
-        <<Value Object>> 📏
-        +string Nombre
-        +string Simbolo
-        +Equals(other) bool
-        +GetHashCode() int
-        +ToString() string
+erDiagram
+    INGREDIENTE {
+        string id PK
+        string categoriaId FK
+        decimal stockActual
+        decimal stockMinimo
+        decimal stockMaximo
+    }
+    LOTE {
+        string id PK
+        string ingredienteId FK
+        decimal cantidad
+        datetime fechaVencimiento
+        string proveedorId FK
+    }
+    ORDEN_COMPRA {
+        string id PK
+        string proveedorId FK
+        datetime fechaSolicitud
+        string estado
+    }
+    LINEA_ORDEN {
+        string id PK
+        string ordenCompraId FK
+        string ingredienteId FK
+        decimal cantidadSolicitada
+        decimal cantidadRecibida
+        decimal precioUnitario
+    }
+    PROVEEDOR {
+        string id PK
+        string nombre
+    }
+    MOVIMIENTO_INVENTARIO {
+        string id PK
+        string ingredienteId FK
+        string loteId FK
+        string tipoMovimiento
+        decimal cantidad
+        datetime fechaHora
+        string usuarioId
+        string referencia
     }
 
-    class Cantidad {
-        <<Value Object>> 📊
-        +decimal Valor
+    INGREDIENTE ||--o{ LOTE : tiene
+    INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : registra
+    ORDEN_COMPRA ||--o{ LINEA_ORDEN : contiene
+    LINEA_ORDEN }o--|| INGREDIENTE : referencia
+    LOTE }o--|| PROVEEDOR : proviene_de
         +UnidadDeMedida UnidadMedida
         +Sumar(otra) Cantidad
         +Restar(otra) Cantidad

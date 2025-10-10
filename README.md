@@ -730,12 +730,48 @@ Para el detalle completo del modelo de datos, consulta `docs/README.md` (secció
 
 ```mermaid
 erDiagram
-    INGREDIENTE { string id PK; string categoriaId FK; decimal stockActual; decimal stockMinimo; decimal stockMaximo }
-    LOTE { string id PK; string ingredienteId FK; decimal cantidad; date fechaVencimiento; string proveedorId FK }
-    ORDEN_COMPRA { string id PK; string proveedorId FK; date fechaSolicitud; string estado }
-    LINEA_ORDEN { string id PK; string ordenCompraId FK; string ingredienteId FK; decimal cantidad; decimal precioUnitario }
-    PROVEEDOR { string id PK; string nombre }
-    MOVIMIENTO_INVENTARIO { string id PK; string ingredienteId FK; string loteId FK; string tipoMovimiento; decimal cantidad; datetime fechaHora }
+    INGREDIENTE {
+        string id PK
+        string categoriaId FK
+        decimal stockActual
+        decimal stockMinimo
+        decimal stockMaximo
+    }
+    LOTE {
+        string id PK
+        string ingredienteId FK
+        decimal cantidad
+        datetime fechaVencimiento
+        string proveedorId FK
+    }
+    ORDEN_COMPRA {
+        string id PK
+        string proveedorId FK
+        datetime fechaSolicitud
+        string estado
+    }
+    LINEA_ORDEN {
+        string id PK
+        string ordenCompraId FK
+        string ingredienteId FK
+        decimal cantidadSolicitada
+        decimal cantidadRecibida
+        decimal precioUnitario
+    }
+    PROVEEDOR {
+        string id PK
+        string nombre
+    }
+    MOVIMIENTO_INVENTARIO {
+        string id PK
+        string ingredienteId FK
+        string loteId FK
+        string tipoMovimiento
+        decimal cantidad
+        datetime fechaHora
+        string usuarioId
+        string referencia
+    }
 
     INGREDIENTE ||--o{ LOTE : tiene
     INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : registra

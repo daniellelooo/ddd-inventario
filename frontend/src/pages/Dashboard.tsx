@@ -48,14 +48,28 @@ const Dashboard: React.FC = () => {
       const [statsData, reabastecer, vencer, pendientes] = await Promise.all([
         dashboardService.getStats(),
         ingredientesService.getParaReabastecer(),
-        lotesService.getProximosVencer(7),
+        lotesService.getLotesVencenPronto(30), // Changed from 7 to 30 days
         ordenesCompraService.getPendientes(),
       ]);
 
       setStats(statsData);
-      setIngredientesReabastecer(reabastecer.slice(0, 5));
-      setLotesVencer(vencer.slice(0, 5));
-      setOrdenesPendientes(pendientes.slice(0, 5));
+      setIngredientesReabastecer((reabastecer || []).slice(0, 5));
+
+      // Filter lotes with valid dates before setting state
+      const lotesValidos = (vencer || []).filter((lote: any) => {
+        if (!lote || !lote.fechaVencimiento) return false;
+        const fecha = new Date(lote.fechaVencimiento);
+        return !isNaN(fecha.getTime());
+      });
+      setLotesVencer(lotesValidos.slice(0, 5));
+
+      // Filter orders with valid dates before setting state
+      const ordenesValidas = (pendientes || []).filter((orden: any) => {
+        if (!orden || !orden.fechaEsperada) return false;
+        const fecha = new Date(orden.fechaEsperada);
+        return !isNaN(fecha.getTime());
+      });
+      setOrdenesPendientes(ordenesValidas.slice(0, 5));
     } catch (error) {
       console.error("Error loading dashboard:", error);
     } finally {
@@ -190,7 +204,7 @@ const Dashboard: React.FC = () => {
         {/* Lotes próximos a vencer */}
         <div className="dashboard-section">
           <div className="section-header">
-            <h2>Lotes Próximos a Vencer (7 días)</h2>
+            <h2>Lotes Próximos a Vencer (30 días)</h2>
             <button className="btn btn-outline">Ver Todos</button>
           </div>
           <div className="card">
@@ -210,36 +224,43 @@ const Dashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {lotesVencer.map((lote) => (
-                      <tr key={lote.id}>
-                        <td>
-                          <strong>{lote.codigo}</strong>
-                        </td>
-                        <td>{lote.ingredienteNombre}</td>
-                        <td>{lote.cantidadDisponible}</td>
-                        <td>
-                          {format(
-                            new Date(lote.fechaVencimiento),
-                            "dd/MM/yyyy",
-                            { locale: es }
-                          )}
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              lote.diasParaVencer <= 3
-                                ? "badge-danger"
-                                : "badge-warning"
-                            }`}
-                          >
-                            {lote.diasParaVencer} días
-                          </span>
-                        </td>
-                        <td>
-                          <span className="badge badge-warning">Urgente</span>
-                        </td>
-                      </tr>
-                    ))}
+                    {lotesVencer
+                      .filter((lote: any) => {
+                        // Filter out invalid lotes before mapping
+                        if (!lote || !lote.fechaVencimiento) return false;
+                        const fecha = new Date(lote.fechaVencimiento);
+                        return !isNaN(fecha.getTime());
+                      })
+                      .map((lote: any) => (
+                        <tr key={lote.id}>
+                          <td>
+                            <strong>{lote.codigo}</strong>
+                          </td>
+                          <td>{lote.ingredienteNombre}</td>
+                          <td>{lote.cantidadDisponible}</td>
+                          <td>
+                            {format(
+                              new Date(lote.fechaVencimiento),
+                              "dd/MM/yyyy",
+                              { locale: es }
+                            )}
+                          </td>
+                          <td>
+                            <span
+                              className={`badge ${
+                                lote.diasHastaVencimiento <= 3
+                                  ? "badge-danger"
+                                  : "badge-warning"
+                              }`}
+                            >
+                              {lote.diasHastaVencimiento} días
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge badge-warning">Urgente</span>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -271,31 +292,43 @@ const Dashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {ordenesPendientes.map((orden) => (
-                      <tr key={orden.id}>
-                        <td>
-                          <strong>{orden.numero}</strong>
-                        </td>
-                        <td>{orden.proveedorNombre}</td>
-                        <td>{orden.ingredienteNombre}</td>
-                        <td>{orden.cantidad}</td>
-                        <td>
-                          <strong>
-                            ${orden.total.toLocaleString()} {orden.moneda}
-                          </strong>
-                        </td>
-                        <td>
-                          <span className="badge badge-warning">
-                            {orden.estado}
-                          </span>
-                        </td>
-                        <td>
-                          {format(new Date(orden.fechaEsperada), "dd/MM/yyyy", {
-                            locale: es,
-                          })}
-                        </td>
-                      </tr>
-                    ))}
+                    {ordenesPendientes
+                      .filter((orden) => {
+                        // Filter out orders with invalid dates
+                        if (!orden || !orden.fechaEsperada) return false;
+                        const fecha = new Date(orden.fechaEsperada);
+                        return !isNaN(fecha.getTime());
+                      })
+                      .map((orden) => (
+                        <tr key={orden.id}>
+                          <td>
+                            <strong>{orden.numero}</strong>
+                          </td>
+                          <td>{orden.proveedorNombre}</td>
+                          <td>{orden.ingredienteNombre}</td>
+                          <td>{orden.cantidad}</td>
+                          <td>
+                            <strong>
+                              ${orden.total?.toLocaleString() || 0}{" "}
+                              {orden.moneda}
+                            </strong>
+                          </td>
+                          <td>
+                            <span className="badge badge-warning">
+                              {orden.estado}
+                            </span>
+                          </td>
+                          <td>
+                            {format(
+                              new Date(orden.fechaEsperada),
+                              "dd/MM/yyyy",
+                              {
+                                locale: es,
+                              }
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

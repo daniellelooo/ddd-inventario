@@ -25,8 +25,26 @@ export const ingredientesService = {
   },
 
   getParaReabastecer: async (): Promise<IngredienteParaReabastecer[]> => {
-    const response = await apiClient.get('/ingredientes/reabastecer');
-    return response.data;
+    // Get all ingredients and filter those with low stock
+    const response = await apiClient.get('/ingredientes');
+    const ingredientes = response.data;
+    
+    // Filter ingredients where cantidadEnStock <= stockMinimo
+    return ingredientes
+      .filter((ing: any) => ing.cantidadEnStock <= ing.stockMinimo)
+      .map((ing: any) => ({
+        id: ing.id,
+        nombre: ing.nombre,
+        cantidadActual: ing.cantidadEnStock,
+        stockMinimo: ing.stockMinimo,
+        stockMaximo: ing.stockMaximo,
+        categoriaNombre: '', // Will be empty for now
+        unidadMedida: {
+          simbolo: ing.unidadMedida || 'un',
+          nombre: ing.unidadMedida || 'unidad'
+        },
+        cantidadSugerida: ing.stockMaximo - ing.cantidadEnStock
+      }));
   },
 
   create: async (ingrediente: Partial<Ingrediente>): Promise<Ingrediente> => {
@@ -51,6 +69,39 @@ export const lotesService = {
     return response.data;
   },
 
+  getAllWithDetails: async (): Promise<any[]> => {
+    // Get lotes and ingredients
+    const [lotesResponse, ingredientesResponse] = await Promise.all([
+      apiClient.get('/lotes'),
+      apiClient.get('/ingredientes')
+    ]);
+    
+    const lotes = lotesResponse.data;
+    const ingredientes = ingredientesResponse.data;
+    
+    // Create a map of ingredientes for quick lookup
+    const ingredientesMap = new Map();
+    ingredientes.forEach((ing: any) => {
+      ingredientesMap.set(ing.id, ing.nombre);
+    });
+    
+    // Enrich lotes with ingredient names and calculate days until expiration
+    return lotes
+      .filter((lote: any) => lote.fechaVencimiento) // Filter out lotes without valid date
+      .map((lote: any) => {
+        const diasHastaVencimiento = Math.floor(
+          (new Date(lote.fechaVencimiento).getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+        
+        return {
+          ...lote,
+          ingredienteNombre: ingredientesMap.get(lote.ingredienteId) || 'Desconocido',
+          diasHastaVencimiento
+        };
+      });
+  },
+
   getById: async (id: string): Promise<Lote> => {
     const response = await apiClient.get(`/lotes/${id}`);
     return response.data;
@@ -64,6 +115,17 @@ export const lotesService = {
   getByIngrediente: async (ingredienteId: string): Promise<Lote[]> => {
     const response = await apiClient.get(`/lotes/ingrediente/${ingredienteId}`);
     return response.data;
+  },
+
+  // Get lotes expiring within specified days
+  getLotesVencenPronto: async (dias: number = 7): Promise<any[]> => {
+    const allLotes = await lotesService.getAllWithDetails();
+    return allLotes.filter((lote: any) => 
+      lote.fechaVencimiento && // Ensure fechaVencimiento exists
+      !isNaN(lote.diasHastaVencimiento) && // Ensure diasHastaVencimiento is valid
+      lote.diasHastaVencimiento <= dias && 
+      lote.diasHastaVencimiento >= 0
+    );
   },
 };
 
@@ -191,12 +253,15 @@ export const categoriasService = {
 // ===== DASHBOARD =====
 export const dashboardService = {
   getStats: async () => {
-    const [ingredientes, bajoStock, lotesVencer, ordenesPendientes] = await Promise.all([
+    const [ingredientes, bajoStock, todosLotes, ordenesPendientes] = await Promise.all([
       ingredientesService.getAll(),
       ingredientesService.getParaReabastecer(),
-      lotesService.getProximosVencer(7),
+      lotesService.getAllWithDetails(),
       ordenesCompraService.getPendientes(),
     ]);
+
+    // Filter lotes expiring within 30 days
+    const lotesVencer = todosLotes.filter((lote: any) => lote.diasHastaVencimiento <= 30 && lote.diasHastaVencimiento >= 0);
 
     return {
       totalIngredientes: ingredientes.length,

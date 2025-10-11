@@ -11,7 +11,6 @@ import Ingredientes from "./pages/Ingredientes";
 import Lotes from "./pages/Lotes";
 import Proveedores from "./pages/Proveedores";
 import OrdenesCompra from "./pages/OrdenesCompra";
-import Movimientos from "./pages/Movimientos";
 import Categorias from "./pages/Categorias";
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
           <Route path="/lotes" element={<Lotes />} />
           <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/ordenes-compra" element={<OrdenesCompra />} />
-          <Route path="/movimientos" element={<Movimientos />} />
           <Route path="/categorias" element={<Categorias />} />
         </Routes>
       </Layout>

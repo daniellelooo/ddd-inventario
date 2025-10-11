@@ -6,7 +6,6 @@ import {
   FiBox,
   FiUsers,
   FiShoppingCart,
-  FiActivity,
   FiLayers,
 } from "react-icons/fi";
 import "./Sidebar.css";
@@ -24,7 +23,6 @@ const Sidebar: React.FC = () => {
       icon: FiShoppingCart,
       label: "Órdenes de Compra",
     },
-    { path: "/movimientos", icon: FiActivity, label: "Movimientos" },
     { path: "/categorias", icon: FiLayers, label: "Categorías" },
   ];
 

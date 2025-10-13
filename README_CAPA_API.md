@@ -1,401 +1,800 @@
-# 🌐 CAPA API (PRESENTACIÓN) - Criterios de Evaluación# 🌐 CAPA API (PRESENTACIÓN) - Criterios de Evaluación# 🌐 CAPA API (PRESENTACIÓN) - InventarioDDD.API
+# 📋 CAPA API - Criterios de Evaluación# 🌐 CAPA API (PRESENTACIÓN) - Criterios de Evaluación# 🌐 CAPA API (PRESENTACIÓN) - Criterios de Evaluación# 🌐 CAPA API (PRESENTACIÓN) - InventarioDDD.API
 
-## 📋 Criterios de Evaluación## 📋 Índice## 📋 Índice
 
-1. [Controllers Delgados](#1-controllers-delgados)- [Descripción General](#descripción-general)- [Descripción General](#descripción-general)
+
+## 1. Controllers Delgados - Implementan los casos de uso## 📋 Criterios de Evaluación## 📋 Índice## 📋 Índice
+
+
+
+### ¿Qué significa?1. [Controllers Delgados](#1-controllers-delgados)- [Descripción General](#descripción-general)- [Descripción General](#descripción-general)
+
+Los controllers **NO hacen el trabajo pesado**, solo reciben la petición y **delegan** la ejecución al handler correspondiente.
 
 2. [Manejan Consistencia](#2-manejan-consistencia)
 
-3. [DTOs para Entrada/Salida](#3-dtos-para-entradasalida)- [Criterios de Evaluación](#criterios-de-evaluación)- [Responsabilidades](#responsabilidades)
+### ¿Cómo lo implementamos?
 
-4. [Mapeo Explícito](#4-mapeo-explícito)
+Usamos el patrón **Mediator** con MediatR. El controller:3. [DTOs para Entrada/Salida](#3-dtos-para-entradasalida)- [Criterios de Evaluación](#criterios-de-evaluación)- [Responsabilidades](#responsabilidades)
 
-5. [Validación en Boundaries](#5-validación-en-boundaries) - [1. Controllers Delgados](#1-controllers-delgados)- [Estructura de Archivos](#estructura-de-archivos)
+1. Recibe la petición HTTP
 
---- - [2. Manejan Consistencia](#2-manejan-consistencia-commits-rollbacks)- [Archivos Principales](#archivos-principales)
+2. Crea el comando/query4. [Mapeo Explícito](#4-mapeo-explícito)
 
-## 1. Controllers Delgados - [3. DTOs para Entrada/Salida](#3-dtos-para-entradasalida)- [Controllers (Controladores)](#controllers-controladores)
+3. **Delega** usando `_mediator.Send()`
 
-**Criterio**: Implementan los casos de uso - [4. Mapeo Explícito](#4-mapeo-explícito-hacidesde-el-modelo-de-dominio)- [Middleware](#middleware)
+4. Retorna la respuesta HTTP5. [Validación en Boundaries](#5-validación-en-boundaries) - [1. Controllers Delgados](#1-controllers-delgados)- [Estructura de Archivos](#estructura-de-archivos)
 
-### ¿Qué significa "Controller Delgado"? - [5. Validación en Boundaries](#5-validación-de-datos-en-boundaries)- [Configuración](#configuración)
 
-El controller **NO hace el trabajo**, solo **coordina y delega**.- [Resumen de Cumplimiento](#resumen-de-cumplimiento)
 
-### Ejemplo Real---
+### Ejemplo en el código--- - [2. Manejan Consistencia](#2-manejan-consistencia-commits-rollbacks)- [Archivos Principales](#archivos-principales)
 
-**Archivo**: `IngredientesController.cs`---
 
-`````csharp## Descripción General
 
-[HttpPost]
+**Archivo**: `backend/InventarioDDD.API/Controllers/IngredientesController.cs`## 1. Controllers Delgados - [3. DTOs para Entrada/Salida](#3-dtos-para-entradasalida)- [Controllers (Controladores)](#controllers-controladores)
 
-public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)## Descripción General
 
-{
 
-    tryLa **Capa API** es la capa más externa de la aplicación y actúa como punto de entrada para todas las peticiones HTTP. Esta capa expone endpoints RESTful que permiten a los clientes (como el frontend React) interactuar con el sistema de inventario.
-
-    {
-
-        // 1. Preparar datosLa **Capa API** es la capa de presentación que actúa como punto de entrada HTTP para todas las peticiones del frontend. Implementa controllers REST que exponen endpoints y coordinan la ejecución de casos de uso mediante MediatR.
-
-        var comando = new CrearIngredienteCommand
-
-        {### Tecnologías Utilizadas
-
-            Nombre = request.Nombre,
-
-            Descripcion = request.Descripcion,**Tecnologías**: ASP.NET Core 9, MediatR, Swagger/OpenAPI
-
-            UnidadMedida = request.UnidadMedida,
-
-            StockMinimo = request.StockMinimo,- **.NET 9** (ASP.NET Core)
-
-            StockMaximo = request.StockMaximo,
-
-            CategoriaId = request.CategoriaId---- **MediatR** - Para implementar el patrón Mediator
-
-        };
-
-- **Swagger/OpenAPI** - Para documentación de API
-
-        // 2. DELEGAR (aquí está lo importante)
-
-        var ingredienteId = await _mediator.Send(comando);## Criterios de Evaluación- **Entity Framework Core** - ORM para acceso a datos
-
-        //                         ↑
-
-        //   El controller DELEGA el trabajo al Handler### ✅ 1. Controllers Delgados---
-
-        //   No sabe cómo se valida, crea o guarda
-
-**Criterio**: Controllers delgados que implementan los casos de uso## Responsabilidades
-
-        // 3. Retornar respuesta
-
-        return CreatedAtAction(nameof(ObtenerTodos), **Evidencia en el Proyecto**:1. **Recibir peticiones HTTP** desde clientes externos
-
-            new { id = ingredienteId },
-
-            new { id = ingredienteId, message = "Ingrediente creado exitosamente" });2. **Validar datos de entrada** básicos (formato, tipos)
-
-    }
-
-    catch (Exception ex)#### **Archivo**: `IngredientesController.cs`3. **Enrutar peticiones** a los handlers correspondientes mediante MediatR
-
-    {
-
-        return StatusCode(500, new { message = "Error" });4. **Serializar/Deserializar** objetos JSON
-
-    }
-
-}````csharp5. **Manejar errores** y devolver respuestas HTTP apropiadas
-
-`````
-
-[ApiController]6. **Implementar CORS** para permitir acceso desde el frontend
-
-### ¿Qué hace el Controller?
-
-- ✅ Recibe datos HTTP[Route("api/[controller]")]7. **Documentar endpoints** con Swagger
-
-- ✅ Prepara el Command
-
-- ✅ **DELEGA a MediatR** (línea clave: `_mediator.Send()`)public class IngredientesController : ControllerBase
-
-- ✅ Retorna respuesta HTTP
-
-{> **Nota Importante**: Esta capa NO contiene lógica de negocio. Solo coordina y delega responsabilidades.
-
-### ¿Qué NO hace el Controller?
-
-- ❌ NO valida reglas de negocio private readonly IMediator \_mediator;
-
-- ❌ NO accede a la base de datos
-
-- ❌ NO crea entidades private readonly ILogger<IngredientesController> \_logger;---
-
-- ❌ NO tiene lógica compleja
-
-  private readonly IIngredienteRepository \_ingredienteRepository;
-
-### ✅ Cumple el Criterio
-
-**SÍ**, el controller es delgado porque solo coordina y delega el trabajo real al Handler.## Estructura de Archivos
-
---- public IngredientesController(
-
-## 2. Manejan Consistencia IMediator mediator, ```
-
-**Criterio**: Manejan consistencia (commits, rollbacks) ILogger<IngredientesController> logger,InventarioDDD.API/
-
-### ¿Qué significa? IIngredienteRepository ingredienteRepository)│
-
-Si algo falla, **todos los cambios se revierten** (rollback). Si todo sale bien, **todos los cambios se guardan** (commit). {├── Controllers/ # Controladores REST
-
-### Ejemplo Real \_mediator = mediator;│ ├── CategoriasController.cs
-
-````csharp _logger = logger;│   ├── IngredientesController.cs
-
-[HttpPost]
-
-public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)        _ingredienteRepository = ingredienteRepository;│   ├── InventarioController.cs
-
-{
-
-    try    }│   ├── LotesController.cs
-
-    {
-
-        var comando = new CrearIngredienteCommand { ... };│   ├── OrdenesCompraController.cs
-
-
-
-        // Entity Framework Core maneja transacciones automáticamente    /// <summary>│   └── ProveedoresController.cs
-
-        var ingredienteId = await _mediator.Send(comando);
-
-            /// ✅ CONTROLLER DELGADO: Solo coordina, NO tiene lógica de negocio│
-
-        // ✅ Si llega aquí: COMMIT (todo se guardó)
-
-        return CreatedAtAction(...);    /// </summary>├── Middleware/               # Middleware personalizado
-
-    }
-
-    catch (Exception ex)    [HttpPost]│   └── ExceptionHandlingMiddleware.cs
-
-    {
-
-        // ❌ Si hay error: ROLLBACK (nada se guarda)    public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)│
-
-        return StatusCode(500, new { message = "Error" });
-
-    }    {├── Properties/
-
-}
-
-```        try│   └── launchSettings.json   # Configuración de inicio
-
-
-
-### ¿Cómo funciona?        {│
-
-
-
-**Escenario Exitoso**:            // 1. Construye el Command (DTO de entrada)├── Program.cs                # Punto de entrada y configuración
-
-````
-
-1. Crear ingrediente ✅ var comando = new CrearIngredienteCommand├── appsettings.json # Configuración de la aplicación
-
-2. Actualizar stock ✅
-
-3. Guardar en BD ✅ {└── InventarioDDD.API.csproj # Archivo de proyecto
-
-→ COMMIT: Todo se guarda
-
-`                Nombre = request.Nombre,`
-
-**Escenario con Error**: Descripcion = request.Descripcion,
-
-```
-
-1. Crear ingrediente ✅                UnidadMedida = request.UnidadMedida,---
-
-2. Actualizar stock ❌ ERROR
-
-→ ROLLBACK: Nada se guarda (ingrediente tampoco)                StockMinimo = request.StockMinimo,
-
-```
-
-                StockMaximo = request.StockMaximo,## Archivos Principales
-
-### Middleware para Errores
-
-                CategoriaId = request.CategoriaId
-
-**Archivo**: `ExceptionHandlingMiddleware.cs`
-
-            };### 📄 Program.cs
-
-````csharp
-
-public async Task InvokeAsync(HttpContext context)
-
-{
-
-    try            // 2. Delega a MediatR (que ejecuta el Handler)**Propósito**: Punto de entrada de la aplicación. Configura todos los servicios y el pipeline de middleware.
-
-    {
-
-        await _next(context); // Ejecuta controller y handler            var ingredienteId = await _mediator.Send(comando);
-
-        // ✅ Si no hay errores: COMMIT
-
-    }**Responsabilidades**:
-
-    catch (Exception ex)
-
-    {            // 3. Retorna respuesta HTTP apropiada
-
-        // ❌ Si hay error: ROLLBACK automático
-
-        context.Response.StatusCode = 500;            return CreatedAtAction(1. **Configuración de Servicios**:
-
-        await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-
-    }                nameof(ObtenerTodos),
-
-}
-
-```                new { id = ingredienteId },    - Registra MediatR para CQRS
-
-
-
-### ✅ Cumple el Criterio                new { id = ingredienteId, message = "Ingrediente creado exitosamente" });   - Configura DbContext con SQLite
-
-**SÍ**, Entity Framework Core + Middleware garantizan que todo se guarda o nada se guarda.
-
-        }   - Registra repositorios (Dependency Injection)
-
----
-
-        catch (InvalidOperationException ex)   - Configura Swagger para documentación
-
-## 3. DTOs para Entrada/Salida
-
-        {
-
-**Criterio**: Implementa DTOs para transportar datos entre capas
-
-            return BadRequest(new { message = ex.Message });2. **Configuración del Pipeline HTTP**:
-
-### ¿Qué son los DTOs?
-
-        }   - Habilita Swagger en desarrollo
-
-**DTO** = Objeto simple para transportar datos (sin lógica de negocio)
-
-        catch (Exception ex)   - Configura CORS para permitir peticiones del frontend
-
-### Flujo Completo
-
-        {   - Agrega middleware de manejo de excepciones
-
-````
-
-Frontend → DTO de Entrada → Handler → DTO de Salida → Frontend \_logger.LogError(ex, "Error al crear ingrediente"); - Configura enrutamiento de controladores
-
-````
-
-            return StatusCode(500, new { message = "Error al crear el ingrediente" });
-
-### DTO de Entrada (Request)
-
-        }**Código Clave**:
-
-**Archivo**: `IngredientesController.cs`
-
-    }
+El controller recibe datos y delega:**Criterio**: Implementan los casos de uso - [4. Mapeo Explícito](#4-mapeo-explícito-hacidesde-el-modelo-de-dominio)- [Middleware](#middleware)
 
 ```csharp
 
-// El frontend envía esto (JSON):```csharp
+[HttpPost]### ¿Qué significa "Controller Delgado"? - [5. Validación en Boundaries](#5-validación-de-datos-en-boundaries)- [Configuración](#configuración)
+
+public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)
+
+{El controller **NO hace el trabajo**, solo **coordina y delega**.- [Resumen de Cumplimiento](#resumen-de-cumplimiento)
+
+    var comando = new CrearIngredienteCommand
+
+    {### Ejemplo Real---
+
+        Nombre = request.Nombre,
+
+        UnidadMedida = request.UnidadMedida,**Archivo**: `IngredientesController.cs`---
+
+        StockMinimo = request.StockMinimo
+
+    };`````csharp## Descripción General
+
+    
+
+    // AQUÍ DELEGA - no hace el trabajo, solo envía el comando[HttpPost]
+
+    var ingredienteId = await _mediator.Send(comando);
+
+    public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)## Descripción General
+
+    return CreatedAtAction(nameof(ObtenerTodos), new { id = ingredienteId });
+
+}{
+
+```
+
+    tryLa **Capa API** es la capa más externa de la aplicación y actúa como punto de entrada para todas las peticiones HTTP. Esta capa expone endpoints RESTful que permiten a los clientes (como el frontend React) interactuar con el sistema de inventario.
+
+**¿Qué NO hace el controller?**
+
+- ❌ NO valida reglas de negocio    {
+
+- ❌ NO crea entidades del dominio
+
+- ❌ NO accede a la base de datos        // 1. Preparar datosLa **Capa API** es la capa de presentación que actúa como punto de entrada HTTP para todas las peticiones del frontend. Implementa controllers REST que exponen endpoints y coordinan la ejecución de casos de uso mediante MediatR.
+
+- ❌ NO tiene lógica compleja
+
+        var comando = new CrearIngredienteCommand
+
+**¿Qué SÍ hace?**
+
+- ✅ Recibe datos HTTP        {### Tecnologías Utilizadas
+
+- ✅ Delega al handler (MediatR)
+
+- ✅ Retorna respuesta HTTP            Nombre = request.Nombre,
+
+
+
+---            Descripcion = request.Descripcion,**Tecnologías**: ASP.NET Core 9, MediatR, Swagger/OpenAPI
+
+
+
+## 2. Manejan Consistencia - Commits y Rollbacks            UnidadMedida = request.UnidadMedida,
+
+
+
+### ¿Qué significa?            StockMinimo = request.StockMinimo,- **.NET 9** (ASP.NET Core)
+
+Si una operación falla, **todos los cambios se revierten** (rollback). Si funciona, **todos los cambios se guardan** (commit).
+
+            StockMaximo = request.StockMaximo,
+
+### ¿Cómo lo implementamos?
+
+Entity Framework Core maneja las transacciones automáticamente:            CategoriaId = request.CategoriaId---- **MediatR** - Para implementar el patrón Mediator
+
+- **COMMIT**: Si el handler termina sin errores
+
+- **ROLLBACK**: Si hay una excepción        };
+
+
+
+### Ejemplo en el código- **Swagger/OpenAPI** - Para documentación de API
+
+
+
+**Archivo**: `backend/InventarioDDD.API/Controllers/OrdenesCompraController.cs`        // 2. DELEGAR (aquí está lo importante)
+
+
+
+```csharp        var ingredienteId = await _mediator.Send(comando);## Criterios de Evaluación- **Entity Framework Core** - ORM para acceso a datos
+
+[HttpPost("{id}/recibir")]
+
+public async Task<IActionResult> Recibir(Guid id, [FromBody] RecibirOrdenDeCompraCommand command)        //                         ↑
 
 {
 
-  "nombre": "Tomate",    /// <summary>// Registro de MediatR (Patrón Mediator para CQRS)
-
-  "unidadMedida": "kg",
-
-  "stockMinimo": 10    /// ✅ CONTROLLER DELGADO: Solo obtiene y mapea a DTObuilder.Services.AddMediatR(cfg => {
-
-}
-
-    /// </summary>    cfg.RegisterServicesFromAssembly(typeof(CrearIngredienteHandler).Assembly);
-
-// Se convierte en este DTO:
-
-public class CrearIngredienteRequest    [HttpGet]});
-
-{
-
-    public string Nombre { get; set; }    public async Task<IActionResult> ObtenerTodos()
-
-    public string UnidadMedida { get; set; }
-
-    public decimal StockMinimo { get; set; }    {// Configuración de DbContext con SQLite
-
-    // ... más propiedades
-
-}        trybuilder.Services.AddDbContext<InventarioDbContext>(options =>
-
-````
-
-        {    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-### DTO de Salida (Response)
-
-            // 1. Obtiene datos del repositorio
-
-`````csharp
-
-[HttpGet]            var ingredientes = await _ingredienteRepository.ObtenerTodosAsync();// Registro de Repositorios (Dependency Injection)
-
-public async Task<IActionResult> ObtenerTodos()
-
-{builder.Services.AddScoped<IIngredienteRepository, IngredienteRepository>();
-
-    var ingredientes = await _ingredienteRepository.ObtenerTodosAsync();
-
-            // 2. Mapea a DTO (objeto anónimo)builder.Services.AddScoped<IOrdenDeCompraRepository, OrdenDeCompraRepository>();
-
-    // Mapear a DTO (objeto simple)
-
-    var resultado = ingredientes.Select(agg => new            var resultado = ingredientes.Select(agg => new// ... otros repositorios
+    try        //   El controller DELEGA el trabajo al Handler### ✅ 1. Controllers Delgados---
 
     {
 
-        id = agg.Id,            {
+        command.OrdenId = id;        //   No sabe cómo se valida, crea o guarda
 
-        nombre = agg.Ingrediente.Nombre,
+        await _mediator.Send(command);
 
-        unidadMedida = agg.Ingrediente.UnidadDeMedida.Simbolo, // ← De Value Object a string                id = agg.Id,// Configuración de CORS
+        // ✅ Si llega aquí: COMMIT (todo se guarda)**Criterio**: Controllers delgados que implementan los casos de uso## Responsabilidades
 
-        cantidadEnStock = agg.Ingrediente.CantidadEnStock.Valor // ← De Value Object a decimal
+        return Ok(new { message = "Orden recibida exitosamente" });
 
-    }).ToList();                nombre = agg.Ingrediente.Nombre,builder.Services.AddCors(options =>
+    }        // 3. Retornar respuesta
+
+    catch (Exception ex)
+
+    {        return CreatedAtAction(nameof(ObtenerTodos), **Evidencia en el Proyecto**:1. **Recibir peticiones HTTP** desde clientes externos
+
+        // ❌ Si hay error: ROLLBACK (nada se guarda)
+
+        return StatusCode(500, new { message = ex.Message });            new { id = ingredienteId },
+
+    }
+
+}            new { id = ingredienteId, message = "Ingrediente creado exitosamente" });2. **Validar datos de entrada** básicos (formato, tipos)
+
+```
+
+    }
+
+### Middleware para manejo de errores
+
+    catch (Exception ex)#### **Archivo**: `IngredientesController.cs`3. **Enrutar peticiones** a los handlers correspondientes mediante MediatR
+
+**Archivo**: `backend/InventarioDDD.API/Middleware/ExceptionHandlingMiddleware.cs`
+
+    {
+
+El middleware captura todas las excepciones y garantiza el rollback:
+
+```csharp        return StatusCode(500, new { message = "Error" });4. **Serializar/Deserializar** objetos JSON
+
+public async Task InvokeAsync(HttpContext context)
+
+{    }
+
+    try
+
+    {}````csharp5. **Manejar errores** y devolver respuestas HTTP apropiadas
+
+        await _next(context); // Ejecuta el controller y handler
+
+        // ✅ Sin errores = COMMIT`````
+
+    }
+
+    catch (Exception ex)[ApiController]6. **Implementar CORS** para permitir acceso desde el frontend
+
+    {
+
+        // ❌ Con error = ROLLBACK automático### ¿Qué hace el Controller?
+
+        context.Response.StatusCode = 500;
+
+        await context.Response.WriteAsJsonAsync(new { error = ex.Message });- ✅ Recibe datos HTTP[Route("api/[controller]")]7. **Documentar endpoints** con Swagger
+
+    }
+
+}- ✅ Prepara el Command
+
+```
+
+- ✅ **DELEGA a MediatR** (línea clave: `_mediator.Send()`)public class IngredientesController : ControllerBase
+
+**Escenario de ejemplo**:
+
+```- ✅ Retorna respuesta HTTP
+
+Recibir Orden de Compra:
+
+1. Actualizar estado de la orden ✅{> **Nota Importante**: Esta capa NO contiene lógica de negocio. Solo coordina y delega responsabilidades.
+
+2. Crear lotes de ingredientes ✅
+
+3. Actualizar inventario ✅### ¿Qué NO hace el Controller?
+
+→ Si todo funciona: COMMIT (todo se guarda)
+
+- ❌ NO valida reglas de negocio private readonly IMediator \_mediator;
+
+Si el paso 2 falla:
+
+→ ROLLBACK: La orden NO se actualiza, NO se crean lotes- ❌ NO accede a la base de datos
+
+```
+
+- ❌ NO crea entidades private readonly ILogger<IngredientesController> \_logger;---
+
+---
+
+- ❌ NO tiene lógica compleja
+
+## 3. DTOs para Entrada/Salida - Transportan datos entre capas
+
+  private readonly IIngredienteRepository \_ingredienteRepository;
+
+### ¿Qué significa?
+
+Los **DTOs** (Data Transfer Objects) son objetos simples que transportan datos. Nunca exponemos las entidades del dominio directamente.### ✅ Cumple el Criterio
 
 
 
-    return Ok(resultado);                descripcion = agg.Ingrediente.Descripcion,{
+### ¿Cómo lo implementamos?**SÍ**, el controller es delgado porque solo coordina y delega el trabajo real al Handler.## Estructura de Archivos
+
+- **Entrada**: Usamos clases Request (DTOs)
+
+- **Salida**: Convertimos las entidades a objetos simples antes de retornarlas--- public IngredientesController(
+
+
+
+### Ejemplo: DTO de Entrada## 2. Manejan Consistencia IMediator mediator, ```
+
+
+
+**Archivo**: `backend/InventarioDDD.API/Controllers/IngredientesController.cs`**Criterio**: Manejan consistencia (commits, rollbacks) ILogger<IngredientesController> logger,InventarioDDD.API/
+
+
+
+```csharp### ¿Qué significa? IIngredienteRepository ingredienteRepository)│
+
+// DTO de entrada (Request)
+
+public class CrearIngredienteRequestSi algo falla, **todos los cambios se revierten** (rollback). Si todo sale bien, **todos los cambios se guardan** (commit). {├── Controllers/ # Controladores REST
+
+{
+
+    public string Nombre { get; set; }### Ejemplo Real \_mediator = mediator;│ ├── CategoriasController.cs
+
+    public string Descripcion { get; set; }
+
+    public string UnidadMedida { get; set; }````csharp _logger = logger;│   ├── IngredientesController.cs
+
+    public decimal StockMinimo { get; set; }
+
+    public decimal StockMaximo { get; set; }[HttpPost]
 
 }
 
-                unidadMedida = agg.Ingrediente.UnidadDeMedida.Simbolo,    options.AddPolicy("AllowAll",
+public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)        _ingredienteRepository = ingredienteRepository;│   ├── InventarioController.cs
 
-// El frontend recibe esto (JSON):
+[HttpPost]
 
-[                cantidadEnStock = agg.Ingrediente.CantidadEnStock.Valor,        builder => builder.AllowAnyOrigin()
+public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request){
 
-  {
+{
 
-    "id": "guid-123",                stockMinimo = agg.Ingrediente.RangoDeStock.StockMinimo,                         .AllowAnyMethod()
+    // El frontend envía JSON, se convierte automáticamente a este DTO    try    }│   ├── LotesController.cs
 
-    "nombre": "Tomate",
+    var comando = new CrearIngredienteCommand { /* mapear datos */ };
+
+    var id = await _mediator.Send(comando);    {
+
+    return Ok(new { id });
+
+}        var comando = new CrearIngredienteCommand { ... };│   ├── OrdenesCompraController.cs
+
+```
+
+
+
+### Ejemplo: DTO de Salida
+
+        // Entity Framework Core maneja transacciones automáticamente    /// <summary>│   └── ProveedoresController.cs
+
+**Archivo**: `backend/InventarioDDD.API/Controllers/IngredientesController.cs`
+
+        var ingredienteId = await _mediator.Send(comando);
+
+```csharp
+
+[HttpGet]            /// ✅ CONTROLLER DELGADO: Solo coordina, NO tiene lógica de negocio│
+
+public async Task<IActionResult> ObtenerTodos()
+
+{        // ✅ Si llega aquí: COMMIT (todo se guardó)
+
+    var ingredientes = await _ingredienteRepository.ObtenerTodosAsync();
+
+            return CreatedAtAction(...);    /// </summary>├── Middleware/               # Middleware personalizado
+
+    // ✅ Convertimos las entidades a objetos simples (DTO de salida)
+
+    var resultado = ingredientes.Select(agg => new    }
+
+    {
+
+        id = agg.Id,    catch (Exception ex)    [HttpPost]│   └── ExceptionHandlingMiddleware.cs
+
+        nombre = agg.Ingrediente.Nombre,
+
+        unidadMedida = agg.Ingrediente.UnidadDeMedida.Simbolo,    {
+
+        cantidadEnStock = agg.Ingrediente.CantidadEnStock.Valor
+
+    }).ToList();        // ❌ Si hay error: ROLLBACK (nada se guarda)    public async Task<IActionResult> Crear([FromBody] CrearIngredienteRequest request)│
+
+    
+
+    return Ok(resultado); // Retorna objetos simples, NO entidades del dominio        return StatusCode(500, new { message = "Error" });
+
+}
+
+```    }    {├── Properties/
+
+
+
+**¿Por qué usar DTOs?**}
+
+- ✅ El frontend recibe datos simples y fáciles de usar
+
+- ✅ No exponemos la estructura interna del dominio```        try│   └── launchSettings.json   # Configuración de inicio
+
+- ✅ Podemos cambiar el dominio sin afectar la API
+
+- ✅ Separación clara de responsabilidades
+
+
+
+---### ¿Cómo funciona?        {│
+
+
+
+## 4. Mapeo Explícito - Hacia/Desde el Modelo de Dominio
+
+
+
+### ¿Qué significa?**Escenario Exitoso**:            // 1. Construye el Command (DTO de entrada)├── Program.cs                # Punto de entrada y configuración
+
+Convertir **manualmente** los datos entre DTOs y entidades del dominio. No usamos herramientas automáticas como AutoMapper.
+
+````
+
+### ¿Cómo lo implementamos?
+
+Hacemos el mapeo campo por campo, de forma explícita y controlada.1. Crear ingrediente ✅ var comando = new CrearIngredienteCommand├── appsettings.json # Configuración de la aplicación
+
+
+
+### Ejemplo: De DTO a Entidad2. Actualizar stock ✅
+
+
+
+**Archivo**: `backend/InventarioDDD.Application/Handlers/CrearIngredienteHandler.cs`3. Guardar en BD ✅ {└── InventarioDDD.API.csproj # Archivo de proyecto
+
+
+
+```csharp→ COMMIT: Todo se guarda
+
+public async Task<Guid> Handle(CrearIngredienteCommand request, ...)
+
+{`                Nombre = request.Nombre,`
+
+    // ✅ Mapeo explícito: string → Value Object
+
+    var unidadMedida = request.UnidadMedida.ToLower() switch**Escenario con Error**: Descripcion = request.Descripcion,
+
+    {
+
+        "kg" => UnidadDeMedida.Kilogramos,```
+
+        "l" => UnidadDeMedida.Litros,
+
+        "unidad" => UnidadDeMedida.Unidades,1. Crear ingrediente ✅                UnidadMedida = request.UnidadMedida,---
+
+        _ => new UnidadDeMedida(request.UnidadMedida, request.UnidadMedida)
+
+    };2. Actualizar stock ❌ ERROR
+
+    
+
+    // ✅ Mapeo explícito: decimals → Value Object→ ROLLBACK: Nada se guarda (ingrediente tampoco)                StockMinimo = request.StockMinimo,
+
+    var rangoStock = new RangoDeStock(request.StockMinimo, request.StockMaximo);
+
+    ```
+
+    // ✅ Creamos la entidad del dominio con los Value Objects
+
+    var ingrediente = new Ingrediente(                StockMaximo = request.StockMaximo,## Archivos Principales
+
+        request.Nombre,
+
+        request.Descripcion,### Middleware para Errores
+
+        unidadMedida,
+
+        rangoStock,                CategoriaId = request.CategoriaId
+
+        request.CategoriaId
+
+    );**Archivo**: `ExceptionHandlingMiddleware.cs`
+
+    
+
+    return ingrediente.Id;            };### 📄 Program.cs
+
+}
+
+```````csharp
+
+
+
+### Ejemplo: De Entidad a DTOpublic async Task InvokeAsync(HttpContext context)
+
+
+
+**Archivo**: `backend/InventarioDDD.API/Controllers/IngredientesController.cs`{
+
+
+
+```csharp    try            // 2. Delega a MediatR (que ejecuta el Handler)**Propósito**: Punto de entrada de la aplicación. Configura todos los servicios y el pipeline de middleware.
+
+// Tenemos una entidad del dominio con Value Objects
+
+var ingrediente = await _repository.ObtenerAsync(id);    {
+
+
+
+// ✅ Mapeo explícito: Value Object → tipos simples        await _next(context); // Ejecuta controller y handler            var ingredienteId = await _mediator.Send(comando);
+
+var dto = new
+
+{        // ✅ Si no hay errores: COMMIT
+
+    id = ingrediente.Id,
+
+    nombre = ingrediente.Ingrediente.Nombre,    }**Responsabilidades**:
+
+    // Extraemos el valor del Value Object explícitamente
+
+    unidadMedida = ingrediente.Ingrediente.UnidadDeMedida.Simbolo,    catch (Exception ex)
+
+    cantidadEnStock = ingrediente.Ingrediente.CantidadEnStock.Valor,
+
+    stockMinimo = ingrediente.Ingrediente.RangoDeStock.StockMinimo    {            // 3. Retorna respuesta HTTP apropiada
+
+};
+
+```        // ❌ Si hay error: ROLLBACK automático
+
+
+
+**¿Por qué mapeo explícito?**        context.Response.StatusCode = 500;            return CreatedAtAction(1. **Configuración de Servicios**:
+
+- ✅ Control total sobre la conversión
+
+- ✅ Fácil de entender y depurar        await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+
+- ✅ No hay "magia" oculta
+
+- ✅ Podemos aplicar lógica personalizada    }                nameof(ObtenerTodos),
+
+
+
+---}
+
+
+
+## 5. Validación de Datos - En el Punto de Recepción (Boundaries)```                new { id = ingredienteId },    - Registra MediatR para CQRS
+
+
+
+### ¿Qué significa?
+
+Los **boundaries** son los puntos de entrada de la aplicación (los controllers). Aquí hacemos la primera validación de datos.
+
+### ✅ Cumple el Criterio                new { id = ingredienteId, message = "Ingrediente creado exitosamente" });   - Configura DbContext con SQLite
+
+### ¿Cómo lo implementamos?
+
+Tenemos **4 niveles de validación**:**SÍ**, Entity Framework Core + Middleware garantizan que todo se guarda o nada se guarda.
+
+
+
+#### Nivel 1: Controller (Boundary) - Validación básica        }   - Registra repositorios (Dependency Injection)
+
+**Archivo**: `backend/InventarioDDD.API/Controllers/OrdenesCompraController.cs`
+
+---
+
+```csharp
+
+[HttpPost]        catch (InvalidOperationException ex)   - Configura Swagger para documentación
+
+public async Task<IActionResult> CrearOrdenDeCompra([FromBody] CrearOrdenDeCompraCommand command)
+
+{## 3. DTOs para Entrada/Salida
+
+    // ✅ Validación en el boundary
+
+    if (command == null)        {
+
+        return BadRequest(new { message = "Datos inválidos" });
+
+    **Criterio**: Implementa DTOs para transportar datos entre capas
+
+    try
+
+    {            return BadRequest(new { message = ex.Message });2. **Configuración del Pipeline HTTP**:
+
+        var ordenId = await _mediator.Send(command);
+
+        return Ok(new { id = ordenId });### ¿Qué son los DTOs?
+
+    }
+
+    catch (ArgumentException ex)        }   - Habilita Swagger en desarrollo
+
+    {
+
+        return BadRequest(new { message = ex.Message });**DTO** = Objeto simple para transportar datos (sin lógica de negocio)
+
+    }
+
+}        catch (Exception ex)   - Configura CORS para permitir peticiones del frontend
+
+```
+
+### Flujo Completo
+
+#### Nivel 2: Handler (Application) - Validación de lógica de aplicación
+
+**Archivo**: `backend/InventarioDDD.Application/Handlers/CrearIngredienteHandler.cs`        {   - Agrega middleware de manejo de excepciones
+
+
+
+```csharp````
+
+public async Task<Guid> Handle(CrearIngredienteCommand request, ...)
+
+{Frontend → DTO de Entrada → Handler → DTO de Salida → Frontend \_logger.LogError(ex, "Error al crear ingrediente"); - Configura enrutamiento de controladores
+
+    // ✅ Validación de aplicación: ¿existe la categoría?
+
+    var categoriaExiste = await _categoriaRepository.ExisteAsync(request.CategoriaId);````
+
+    if (!categoriaExiste)
+
+        throw new InvalidOperationException("La categoría no existe");            return StatusCode(500, new { message = "Error al crear el ingrediente" });
+
+    
+
+    // ✅ Validación de aplicación: ¿el nombre ya existe?### DTO de Entrada (Request)
+
+    var nombreExiste = await _ingredienteRepository.ExisteNombreAsync(request.Nombre);
+
+    if (nombreExiste)        }**Código Clave**:
+
+        throw new InvalidOperationException("Ya existe un ingrediente con ese nombre");
+
+    **Archivo**: `IngredientesController.cs`
+
+    // Continuar con la creación...
+
+}    }
+
+```
+
+```csharp
+
+#### Nivel 3: Domain (Entidades) - Validación de reglas de negocio
+
+**Archivo**: `backend/InventarioDDD.Domain/ValueObjects/RangoDeStock.cs`// El frontend envía esto (JSON):```csharp
+
+
+
+```csharp{
+
+public RangoDeStock(decimal stockMinimo, decimal stockMaximo)
+
+{  "nombre": "Tomate",    /// <summary>// Registro de MediatR (Patrón Mediator para CQRS)
+
+    // ✅ Validación de reglas de negocio
+
+    if (stockMinimo < 0)  "unidadMedida": "kg",
+
+        throw new ArgumentException("El stock mínimo no puede ser negativo");
+
+      "stockMinimo": 10    /// ✅ CONTROLLER DELGADO: Solo obtiene y mapea a DTObuilder.Services.AddMediatR(cfg => {
+
+    if (stockMaximo <= stockMinimo)
+
+        throw new ArgumentException("El stock máximo debe ser mayor al mínimo");}
+
+    
+
+    StockMinimo = stockMinimo;    /// </summary>    cfg.RegisterServicesFromAssembly(typeof(CrearIngredienteHandler).Assembly);
+
+    StockMaximo = stockMaximo;
+
+}// Se convierte en este DTO:
+
+```
+
+public class CrearIngredienteRequest    [HttpGet]});
+
+#### Nivel 4: Middleware - Captura global de errores
+
+**Archivo**: `backend/InventarioDDD.API/Middleware/ExceptionHandlingMiddleware.cs`{
+
+
+
+```csharp    public string Nombre { get; set; }    public async Task<IActionResult> ObtenerTodos()
+
+public async Task InvokeAsync(HttpContext context)
+
+{    public string UnidadMedida { get; set; }
+
+    try
+
+    {    public decimal StockMinimo { get; set; }    {// Configuración de DbContext con SQLite
+
+        await _next(context);
+
+    }    // ... más propiedades
+
+    catch (ArgumentException ex)
+
+    {}        trybuilder.Services.AddDbContext<InventarioDbContext>(options =>
+
+        // ✅ Captura errores de validación
+
+        context.Response.StatusCode = 400;````
+
+        await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+
+    }        {    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    catch (InvalidOperationException ex)
+
+    {### DTO de Salida (Response)
+
+        context.Response.StatusCode = 422;
+
+        await context.Response.WriteAsJsonAsync(new { error = ex.Message });            // 1. Obtiene datos del repositorio
+
+    }
+
+}`````csharp
+
+```
+
+[HttpGet]            var ingredientes = await _ingredienteRepository.ObtenerTodosAsync();// Registro de Repositorios (Dependency Injection)
+
+### Flujo completo de validación
+
+public async Task<IActionResult> ObtenerTodos()
+
+```
+
+Petición: POST /api/ingredientes{builder.Services.AddScoped<IIngredienteRepository, IngredienteRepository>();
+
+{ "nombre": "", "stockMinimo": -10 }
+
+    var ingredientes = await _ingredienteRepository.ObtenerTodosAsync();
+
+┌─────────────────────────────────┐
+
+│ 1. Controller (Boundary)        │ → Validación básica: formato, nulls            // 2. Mapea a DTO (objeto anónimo)builder.Services.AddScoped<IOrdenDeCompraRepository, OrdenDeCompraRepository>();
+
+├─────────────────────────────────┤
+
+│ 2. Handler (Application)        │ → Validación de aplicación: existencia    // Mapear a DTO (objeto simple)
+
+├─────────────────────────────────┤
+
+│ 3. Domain (Entidades)           │ → Validación de negocio: reglas    var resultado = ingredientes.Select(agg => new            var resultado = ingredientes.Select(agg => new// ... otros repositorios
+
+├─────────────────────────────────┤
+
+│ 4. Middleware                   │ → Captura errores y retorna HTTP    {
+
+└─────────────────────────────────┘
+
+```        id = agg.Id,            {
+
+
+
+**¿Por qué múltiples niveles?**        nombre = agg.Ingrediente.Nombre,
+
+- ✅ Cada capa valida lo que le corresponde
+
+- ✅ Separación de responsabilidades        unidadMedida = agg.Ingrediente.UnidadDeMedida.Simbolo, // ← De Value Object a string                id = agg.Id,// Configuración de CORS
+
+- ✅ Errores claros y específicos
+
+- ✅ Mayor robustez        cantidadEnStock = agg.Ingrediente.CantidadEnStock.Valor // ← De Value Object a decimal
+
+
+
+---    }).ToList();                nombre = agg.Ingrediente.Nombre,builder.Services.AddCors(options =>
+
+
+
+## ✅ Resumen de Cumplimiento
+
+
+
+| Criterio | ¿Cumple? | Evidencia |    return Ok(resultado);                descripcion = agg.Ingrediente.Descripcion,{
+
+|----------|----------|-----------|
+
+| **Controllers Delgados** | ✅ SÍ | Solo coordinan, delegan a MediatR (línea clave: `_mediator.Send()`) |}
+
+| **Manejan Consistencia** | ✅ SÍ | Entity Framework Core + Middleware garantizan transacciones ACID |
+
+| **DTOs Entrada/Salida** | ✅ SÍ | Request classes (entrada), objetos anónimos (salida), nunca exponemos entidades |                unidadMedida = agg.Ingrediente.UnidadDeMedida.Simbolo,    options.AddPolicy("AllowAll",
+
+| **Mapeo Explícito** | ✅ SÍ | Mapeo manual campo por campo, sin AutoMapper ni herramientas automáticas |
+
+| **Validación en Boundaries** | ✅ SÍ | 4 niveles: Controller, Handler, Domain, Middleware |// El frontend recibe esto (JSON):
+
+
+
+---[                cantidadEnStock = agg.Ingrediente.CantidadEnStock.Valor,        builder => builder.AllowAnyOrigin()
+
+
+
+## 📁 Archivos Clave  {
+
+
+
+- **Controllers**: `backend/InventarioDDD.API/Controllers/`    "id": "guid-123",                stockMinimo = agg.Ingrediente.RangoDeStock.StockMinimo,                         .AllowAnyMethod()
+
+  - `IngredientesController.cs`
+
+  - `OrdenesCompraController.cs`    "nombre": "Tomate",
+
+  - `InventarioController.cs`
 
     "unidadMedida": "kg",                stockMaximo = agg.Ingrediente.RangoDeStock.StockMaximo,                         .AllowAnyHeader());
 
-    "cantidadEnStock": 50.5
+- **Middleware**: `backend/InventarioDDD.API/Middleware/`
 
-  }                categoriaId = agg.Ingrediente.CategoriaId,});
+  - `ExceptionHandlingMiddleware.cs`    "cantidadEnStock": 50.5
 
-]
 
-```                activo = agg.Ingrediente.Activo,```
 
+- **Handlers**: `backend/InventarioDDD.Application/Handlers/`  }                categoriaId = agg.Ingrediente.CategoriaId,});
+
+  - `CrearIngredienteHandler.cs`
+
+  - `RecibirOrdenDeCompraHandler.cs`]
+
+
+
+- **Commands**: `backend/InventarioDDD.Application/Commands/````                activo = agg.Ingrediente.Activo,```
+
+  - `CrearIngredienteCommand.cs`
+
+  - `CrearOrdenDeCompraCommand.cs`
 
 
 ### ¿Por qué DTOs?                tieneStockBajo = agg.TieneStockBajo()

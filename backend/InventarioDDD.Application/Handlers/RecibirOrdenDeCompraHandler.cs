@@ -7,9 +7,7 @@ using MediatR;
 
 namespace InventarioDDD.Application.Handlers
 {
-    /// <summary>
-    /// Handler para recibir una orden de compra y crear los lotes
-    /// </summary>
+
     public class RecibirOrdenDeCompraHandler : IRequestHandler<RecibirOrdenDeCompraCommand, bool>
     {
         private readonly IOrdenDeCompraRepository _ordenRepository;

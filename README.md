@@ -2,22 +2,48 @@
 
 Sistema de gestión de inventario para restaurantes implementado con **Domain-Driven Design (DDD)**, **CQRS**, y arquitectura en capas.
 
+**Repositorio**: [github.com/daniellelooo/ddd-inventario](https://github.com/daniellelooo/ddd-inventario)
+
+---
+
+## � Inicio Rápido
+
+### Requisitos Previos
+
+- **.NET 9 SDK**
+- **Node.js 18+** y npm
+- **Git**
+
+### Ejecutar el Proyecto
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/daniellelooo/ddd-inventario.git
+cd ddd-inventario
+
+# 2. Ejecutar Backend (API)
+cd backend/InventarioDDD.API
+dotnet run
+# API disponible en: http://localhost:5261
+# Swagger: http://localhost:5261/swagger
+
+# 3. Ejecutar Frontend (en otra terminal)
+cd frontend
+npm install
+npm start
+# Frontend disponible en: http://localhost:3000
+```
+
 ---
 
 ## 📋 Tabla de Contenidos
 
-1. [Requisitos Previos](#-requisitos-previos)
-2. [Instalación](#-instalación)
-3. [Cómo Ejecutar](#-cómo-ejecutar)
-4. [Arquitectura DDD](#-arquitectura-ddd)
-5. [Diagramas del Dominio](#-diagramas-del-dominio)
-6. [Estructura del Proyecto](#-estructura-del-proyecto)
-7. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
-8. [Documentación](#-documentación)
-9. [Endpoints API](#-endpoints-api)
-10. [Rúbrica de Entrega](#-rúbrica-de-entrega)
-
----
+1. [Arquitectura DDD](#-arquitectura-ddd)
+2. [Estructura del Proyecto](#-estructura-del-proyecto)
+3. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+4. [Documentación Completa](#-documentación-completa)
+5. [Endpoints API](#-endpoints-api)
+6. [Rúbrica de Entrega](#-rúbrica-de-entrega)
 
 ---
 
@@ -74,23 +100,24 @@ Esta sección mapea explícitamente los elementos exigidos por la rúbrica de la
 ### Aspectos de Diseño (25 puntos)
 
 - Gráfica con flujo de la estructura organizacional agrupada por afinidad, destacando el dominio seleccionado:
-    - Referencia: sección [Estructura Organizacional y Dominios](#2-estructura-organizacional-y-dominios) con diagrama Mermaid; el dominio seleccionado (Gestión de Inventario) está resaltado en color verde con estrella.
+  - Referencia: sección [Estructura Organizacional y Dominios](#2-estructura-organizacional-y-dominios) con diagrama Mermaid; el dominio seleccionado (Gestión de Inventario) está resaltado en color verde con estrella.
 - Gráficos con Dominios y dentro de ellos entidades y agregados:
-    - Referencia: sección [Entidades y Agregados](#2-entidades-y-agregados) con tres agregados principales (Ingrediente, Orden de Compra, Lote) y sus entidades relacionadas.
+  - Referencia: sección [Entidades y Agregados](#2-entidades-y-agregados) con tres agregados principales (Ingrediente, Orden de Compra, Lote) y sus entidades relacionadas.
 - Gráfico de Bounded Context mostrando flujo de entidades, agregados, servicios y APIs que consume:
-    - Referencia: sección [Bounded Context y Arquitectura](#3-bounded-context-y-arquitectura) con API, Application, Domain, Infrastructure y contextos externos.
+  - Referencia: sección [Bounded Context y Arquitectura](#3-bounded-context-y-arquitectura) con API, Application, Domain, Infrastructure y contextos externos.
 - Lenguaje Ubicuo presentado en un glosario de términos de negocio:
-    - Referencia: sección [Lenguaje Ubicuo (Ubiquitous Language)](#7-lenguaje-ubicuo-ubiquitous-language) con tabla y frases del dominio.
+  - Referencia: sección [Lenguaje Ubicuo (Ubiquitous Language)](#7-lenguaje-ubicuo-ubiquitous-language) con tabla y frases del dominio.
 - Objetos de Valor del dominio seleccionado:
-    - Referencia: sección [Value Objects](#4-value-objects) con diagramas y características (inmutabilidad, igualdad por valor, autovalidación).
+  - Referencia: sección [Value Objects](#4-value-objects) con diagramas y características (inmutabilidad, igualdad por valor, autovalidación).
 - Triggers y Eventos del dominio seleccionado:
-    - Referencia: sección [Domain Events y Flujos](#5-domain-events-y-flujos) y tabla de eventos implementados.
+  - Referencia: sección [Domain Events y Flujos](#5-domain-events-y-flujos) y tabla de eventos implementados.
 - Definir Servicios del dominio seleccionado:
-    - Referencia: sección [Domain Services](#6-domain-services) con responsabilidades y métodos principales.
+  - Referencia: sección [Domain Services](#6-domain-services) con responsabilidades y métodos principales.
 
 ### Aspectos de Implementación (25 puntos)
 
 #### Capa de Dominio (10 puntos)
+
 - Entidades enriquecidas que implementan comportamientos: ver `InventarioDDD.Domain/Entities` y agregados en `.../Aggregates`.
 - Value Objects inmutables: ver `InventarioDDD.Domain/ValueObjects` (constructores con validaciones y sin setters públicos).
 - Agregados con consistencia: raíz claramente identificada; acceso y reglas centralizadas en la raíz (Ingrediente, OrdenDeCompra, Lote).
@@ -98,21 +125,25 @@ Esta sección mapea explícitamente los elementos exigidos por la rúbrica de la
 - Interfaces de Dominio: repositorios definidos en `InventarioDDD.Domain/Interfaces` e implementados en Infraestructura.
 
 #### Capa de Aplicación (5 puntos)
+
 - Use cases específicos: Commands/Queries en `InventarioDDD.Application/{Commands,Queries}`; cada handler ejecuta una acción de negocio.
 - Orquestación: Handlers (MediatR) coordinan servicios de dominio; no contienen lógica de negocio compleja.
 - Transacciones bien manejadas: operaciones de recepción/consumo se ejecutan de forma consistente vía repositorios y DbContext.
 
 #### Capa de Infraestructura (5 puntos)
+
 - Repositorios implementan interfaces del dominio: `InventarioDDD.Infrastructure/Repositories`.
 - ORM (EF Core) sólo en infraestructura: `InventarioDDD.Infrastructure/Persistence` y `Configuration`.
 - Caché implementada: `InventarioDDD.Infrastructure/Cache` para optimizar lecturas.
 
 #### Capa de Presentación (5 puntos)
+
 - Controllers delgados: `InventarioDDD.API/Controllers` invocan casos de uso/handlers.
 - DTOs para entrada/salida: `InventarioDDD.Application/DTOs` y mapeos explícitos en handlers/controllers.
 - Validación en boundaries: manejo de errores en controllers y middleware, ver `InventarioDDD.API/Middleware/ExceptionHandlingMiddleware.cs`.
 
 Notas:
+
 - En todos los diagramas Mermaid, el dominio seleccionado está resaltado. Si necesitas ver las imágenes originales, consulta la carpeta `docs/` o los adjuntos del curso.
 
 ## 🔧 Solución de Problemas
@@ -120,10 +151,12 @@ Notas:
 Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
 ### Backend (.NET)
+
 - ✅ [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - ✅ SQLite (incluido con .NET)
 
 ### Frontend (React)
+
 - ✅ [Node.js 18+](https://nodejs.org/) (con npm)
 
 ### Verificar Instalación
@@ -182,6 +215,7 @@ start.bat
 ```
 
 Esto iniciará automáticamente:
+
 - ✅ Backend API en `http://localhost:5261`
 - ✅ Frontend React en `http://localhost:3000`
 - ✅ Swagger UI en `http://localhost:5261/swagger`
@@ -196,6 +230,7 @@ dotnet run --project InventarioDDD.API
 ```
 
 El backend estará disponible en:
+
 - 🌐 API: `http://localhost:5261`
 - 📚 Swagger: `http://localhost:5261/swagger`
 
@@ -209,6 +244,7 @@ npm start
 ```
 
 El frontend se abrirá automáticamente en:
+
 - 🌐 Frontend: `http://localhost:3000`
 
 ---
@@ -399,6 +435,7 @@ graph TB
 ```
 
 **Dominios Identificados**:
+
 1. 🍽️ **Gestión de Operaciones** - Core Domain para servicio al cliente
 2. 📦 **Gestión de Inventario** - **DOMINIO SELECCIONADO** (Supporting Domain crítico)
 3. 👥 **Recursos Humanos** - Supporting Domain
@@ -412,18 +449,18 @@ graph TB
 ```mermaid
 graph TB
     subgraph DOMAIN["📦 DOMINIO: GESTIÓN DE INVENTARIO"]
-        
+
         subgraph AGG1["🧱 Agregado: Ingrediente"]
             IA["<b>🥗 INGREDIENTE</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>📏 UnidadMedida: VO<br/>📊 CantidadEnStock: decimal<br/>⬇️ StockMinimo: decimal<br/>⬆️ StockMaximo: decimal<br/>🏷️ CategoriaId: Guid"]
-            
+
             CAT["<b>🏷️ Categoría</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>📄 Descripción: string<br/>✅ Activa: bool"]
-            
+
             MI["<b>📊 MovimientoInventario</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔀 TipoMovimiento: Enum<br/>📦 Cantidad: decimal<br/>📅 FechaMovimiento: DateTime<br/>💬 Motivo: string<br/>🏷️ IngredienteId: Guid"]
         end
 
         subgraph AGG2["📋 Agregado: Orden de Compra"]
             OCA["<b>📋 ORDEN DE COMPRA</b><br/><i>Aggregate Root</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>🔢 Numero: string<br/>🥗 IngredienteId: Guid<br/>🏢 ProveedorId: Guid<br/>📦 Cantidad: decimal<br/>💵 PrecioUnitario: decimal<br/>🚦 Estado: Enum<br/>📅 FechaCreacion: DateTime<br/>📆 FechaEsperada: DateTime"]
-            
+
             PROV["<b>🏢 Proveedor</b><br/><i>Entity</i><br/>━━━━━━━━━━━━━<br/>🆔 Id: Guid<br/>📝 Nombre: string<br/>🏛️ NIT: string<br/>📞 Contacto: string<br/>📍 Direccion: VO<br/>✅ Activo: bool"]
         end
 
@@ -454,14 +491,17 @@ graph TB
 **Agregados Identificados**:
 
 #### 🧱 Agregado: Ingrediente (Root)
+
 - **Invariantes**: Stock nunca negativo, stock máximo > mínimo, categoría activa requerida
 - **Entidades**: Categoría, MovimientoInventario
 
 #### 📋 Agregado: Orden de Compra (Root)
+
 - **Invariantes**: Solo "Pendiente" puede aprobarse, solo "Aprobada" puede recibirse
 - **Entidades**: Proveedor
 
 #### 📦 Agregado: Lote (Root)
+
 - **Invariantes**: Cantidad disponible ≤ inicial, fecha vencimiento futura, código único
 
 ---
@@ -471,7 +511,7 @@ graph TB
 ```mermaid
 graph TB
     subgraph BC["🔷 BOUNDED CONTEXT: GESTIÓN DE INVENTARIO"]
-        
+
         subgraph API["🌐 Capa API - Controllers REST"]
             API1["<b>📤 POST</b> /api/categorias<br/><i>Crear categoría</i>"]
             API2["<b>📤 POST</b> /api/proveedores<br/><i>Crear proveedor</i>"]
@@ -487,25 +527,25 @@ graph TB
 
         subgraph APP["⚙️ Capa Application - CQRS"]
             CMD1["<b>Commands</b><br/>📝 CrearCategoriaCommand<br/>📝 CrearProveedorCommand<br/>📝 CrearIngredienteCommand<br/>📝 RegistrarConsumoCommand<br/>📝 CrearOrdenDeCompraCommand<br/>✅ AprobarOrdenDeCompraCommand<br/>📦 RecibirOrdenDeCompraCommand"]
-            
+
             QRY1["<b>Queries</b><br/>📊 ObtenerIngredientesParaReabastecerQuery<br/>⏰ ObtenerLotesProximosAVencerQuery<br/>📜 ObtenerHistorialMovimientosQuery<br/>📋 ObtenerOrdenesPendientesQuery"]
-            
+
             HDL1["<b>Handlers</b><br/>🎯 MediatR Handlers<br/><i>Orquestan lógica de negocio</i>"]
         end
 
         subgraph DOM["🎯 Capa Domain - Agregados & Servicios"]
             AGG1["<b>🧱 Agregados</b><br/>📦 IngredienteAggregate<br/>📋 OrdenDeCompraAggregate<br/>🏷️ CategoriaAggregate<br/>🏢 ProveedorAggregate<br/>📦 Lotes (dentro de Ingrediente)"]
-            
+
             SVC1["<b>⚙️ Domain Services</b><br/>📊 ServicioDeInventario<br/>🔄 ServicioDeReabastecimiento<br/>⏰ ServicioDeRotacion<br/>📝 ServicioDeConsumo<br/>📦 ServicioDeRecepcion<br/>📋 ServicioDeAuditoria"]
-            
+
             EVT1["<b>🔔 Domain Events</b><br/>📝 IngredientesConsumidos<br/>📦 OrdenDeCompraRecibida<br/>⚠️ AlertaStockBajo<br/>⏰ AlertaVencimiento<br/>📊 StockActualizado<br/>🏷️ LoteRecibido<br/>📋 OrdenDeCompraGenerada"]
         end
 
         subgraph INFRA["🗄️ Capa Infrastructure - Persistencia"]
             REPO1["<b>📚 Repositories</b><br/>🥗 IngredienteRepository<br/>📋 OrdenDeCompraRepository<br/>📦 LoteRepository<br/>🏷️ CategoriaRepository<br/>🏢 ProveedorRepository<br/>📊 MovimientoRepository"]
-            
+
             DB["<b>💾 SQLite Database</b><br/><i>Entity Framework Core</i><br/>📊 Inventario.db"]
-            
+
             CACHE["<b>⚡ Cache</b><br/>🔄 In-Memory Cache<br/><i>Optimización consultas</i>"]
         end
     end
@@ -519,22 +559,22 @@ graph TB
     API1 & API2 & API3 --> CMD1
     API4 & API5 & API6 & API7 --> CMD1
     API8 & API9 & API10 --> QRY1
-    
+
     CMD1 --> HDL1
     QRY1 --> HDL1
-    
+
     HDL1 --> AGG1
     HDL1 --> SVC1
-    
+
     AGG1 -.->|emite| EVT1
     SVC1 -.->|emite| EVT1
-    
+
     AGG1 --> REPO1
     SVC1 --> REPO1
-    
+
     REPO1 --> DB
     REPO1 --> CACHE
-    
+
     EXT1 -.->|HTTP| API4
     EVT1 -.->|notifica| EXT2
     REPO1 -.->|datos| EXT3
@@ -545,7 +585,7 @@ graph TB
     style DOM fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
     style INFRA fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
     style EXT fill:#FAFAFA,stroke:#616161,stroke-width:2px
-    
+
     style API1 fill:#81C784,stroke:#388E3C,stroke-width:2px,color:#fff
     style API2 fill:#81C784,stroke:#388E3C,stroke-width:2px,color:#fff
     style API3 fill:#81C784,stroke:#388E3C,stroke-width:2px,color:#fff
@@ -559,6 +599,7 @@ graph TB
 ```
 
 **Flujo de Interacciones**:
+
 1. **API REST Controllers** → Recibe requests HTTP
 2. **Commands & Queries** → Encapsula intención del usuario (CQRS)
 3. **Handlers (MediatR)** → Orquesta lógica de aplicación
@@ -641,6 +682,7 @@ classDiagram
 ```
 
 **Características de Value Objects**:
+
 - ✅ Inmutables - No cambian después de crearse
 - ✅ Igualdad por valor - Dos VOs con mismos valores son iguales
 - ✅ Sin identidad - No tienen ID propio
@@ -776,16 +818,16 @@ erDiagram
 
 **Domain Events Implementados**:
 
-| Evento | Trigger | Suscriptores |
-|--------|---------|--------------|
-| 📝 **IngredientesConsumidos** | Al registrar consumo | MovimientoInventarioService, ReportesService |
-| ⚠️ **AlertaStockBajo** | Stock < stock mínimo | NotificacionesService, SugerenciasCompraService |
-| 📋 **OrdenDeCompraGenerada** | Al crear orden | AuditoriaService |
-| ✅ **OrdenDeCompraAprobada** | Al aprobar orden | EmailService, WorkflowService |
-| 📦 **OrdenDeCompraRecibida** | Al recibir mercancía | LoteService, InventarioService, FinanzasService |
-| 🏷️ **LoteRecibido** | Al crear lote | VencimientoService, TrazabilidadService |
-| ⏰ **AlertaVencimiento** | Lote próximo a vencer | NotificacionesService, SugerenciasMenuService |
-| 📊 **StockActualizado** | Cambio en stock | DashboardService, CacheService |
+| Evento                        | Trigger               | Suscriptores                                    |
+| ----------------------------- | --------------------- | ----------------------------------------------- |
+| 📝 **IngredientesConsumidos** | Al registrar consumo  | MovimientoInventarioService, ReportesService    |
+| ⚠️ **AlertaStockBajo**        | Stock < stock mínimo  | NotificacionesService, SugerenciasCompraService |
+| 📋 **OrdenDeCompraGenerada**  | Al crear orden        | AuditoriaService                                |
+| ✅ **OrdenDeCompraAprobada**  | Al aprobar orden      | EmailService, WorkflowService                   |
+| 📦 **OrdenDeCompraRecibida**  | Al recibir mercancía  | LoteService, InventarioService, FinanzasService |
+| 🏷️ **LoteRecibido**           | Al crear lote         | VencimientoService, TrazabilidadService         |
+| ⏰ **AlertaVencimiento**      | Lote próximo a vencer | NotificacionesService, SugerenciasMenuService   |
+| 📊 **StockActualizado**       | Cambio en stock       | DashboardService, CacheService                  |
 
 ---
 
@@ -872,26 +914,26 @@ classDiagram
 
 **📖 Glosario de Términos del Dominio**
 
-| Término | Definición | Sinónimos |
-|---------|------------|-----------|
-| **🥗 Ingrediente** | Materia prima o insumo utilizado en la preparación de platos del restaurante | Insumo, Producto, Material |
-| **📦 Lote** | Conjunto de unidades de un ingrediente recibidas en una misma fecha con el mismo proveedor y fecha de vencimiento | Batch, Remesa |
-| **📊 Stock** | Cantidad disponible de un ingrediente en el inventario | Existencias, Disponibilidad |
-| **⬇️ Stock Mínimo** | Cantidad mínima que debe mantenerse de un ingrediente para evitar desabastecimiento | Nivel de Reorden, Punto de Pedido |
-| **⬆️ Stock Máximo** | Cantidad máxima que se puede almacenar de un ingrediente | Capacidad Máxima |
-| **📋 Orden de Compra** | Documento que solicita la compra de ingredientes a un proveedor | OC, Purchase Order |
-| **📊 Movimiento de Inventario** | Registro de entrada o salida de ingredientes del almacén | Transacción, Operación |
-| **📝 Consumo** | Uso de ingredientes para preparar platos (salida de inventario) | Uso, Utilización |
-| **📦 Recepción** | Entrada de mercancía al inventario proveniente de un proveedor | Ingreso, Entrada |
-| **⏰ FEFO** | First Expired, First Out - Método de rotación que prioriza el uso de lotes próximos a vencer | Primero en Vencer, Primero en Salir |
-| **❌ Merma** | Pérdida de ingredientes por deterioro, vencimiento o daño | Desperdicio, Loss |
-| **🔄 Reabastecer** | Acción de solicitar más stock de un ingrediente cuando alcanza el nivel mínimo | Reorden, Reponer |
-| **🏢 Proveedor** | Empresa o persona que suministra ingredientes al restaurante | Supplier, Vendor |
-| **📏 Unidad de Medida** | Forma en que se cuantifica un ingrediente (kg, litros, unidades, etc.) | UM, UoM |
-| **🏷️ Categoría** | Clasificación de ingredientes (carnes, vegetales, lácteos, etc.) | Tipo, Clase |
-| **⏰ Vencimiento** | Fecha límite en que un lote puede ser utilizado de forma segura | Caducidad, Fecha de Expiración |
-| **✅ Aprobar Orden** | Autorización para proceder con una orden de compra | Autorizar, Validar |
-| **🚦 Estado de Orden** | Situación actual de una orden de compra (Pendiente, Aprobada, Recibida, Cancelada) | Status |
+| Término                         | Definición                                                                                                        | Sinónimos                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **🥗 Ingrediente**              | Materia prima o insumo utilizado en la preparación de platos del restaurante                                      | Insumo, Producto, Material          |
+| **📦 Lote**                     | Conjunto de unidades de un ingrediente recibidas en una misma fecha con el mismo proveedor y fecha de vencimiento | Batch, Remesa                       |
+| **📊 Stock**                    | Cantidad disponible de un ingrediente en el inventario                                                            | Existencias, Disponibilidad         |
+| **⬇️ Stock Mínimo**             | Cantidad mínima que debe mantenerse de un ingrediente para evitar desabastecimiento                               | Nivel de Reorden, Punto de Pedido   |
+| **⬆️ Stock Máximo**             | Cantidad máxima que se puede almacenar de un ingrediente                                                          | Capacidad Máxima                    |
+| **📋 Orden de Compra**          | Documento que solicita la compra de ingredientes a un proveedor                                                   | OC, Purchase Order                  |
+| **📊 Movimiento de Inventario** | Registro de entrada o salida de ingredientes del almacén                                                          | Transacción, Operación              |
+| **📝 Consumo**                  | Uso de ingredientes para preparar platos (salida de inventario)                                                   | Uso, Utilización                    |
+| **📦 Recepción**                | Entrada de mercancía al inventario proveniente de un proveedor                                                    | Ingreso, Entrada                    |
+| **⏰ FEFO**                     | First Expired, First Out - Método de rotación que prioriza el uso de lotes próximos a vencer                      | Primero en Vencer, Primero en Salir |
+| **❌ Merma**                    | Pérdida de ingredientes por deterioro, vencimiento o daño                                                         | Desperdicio, Loss                   |
+| **🔄 Reabastecer**              | Acción de solicitar más stock de un ingrediente cuando alcanza el nivel mínimo                                    | Reorden, Reponer                    |
+| **🏢 Proveedor**                | Empresa o persona que suministra ingredientes al restaurante                                                      | Supplier, Vendor                    |
+| **📏 Unidad de Medida**         | Forma en que se cuantifica un ingrediente (kg, litros, unidades, etc.)                                            | UM, UoM                             |
+| **🏷️ Categoría**                | Clasificación de ingredientes (carnes, vegetales, lácteos, etc.)                                                  | Tipo, Clase                         |
+| **⏰ Vencimiento**              | Fecha límite en que un lote puede ser utilizado de forma segura                                                   | Caducidad, Fecha de Expiración      |
+| **✅ Aprobar Orden**            | Autorización para proceder con una orden de compra                                                                | Autorizar, Validar                  |
+| **🚦 Estado de Orden**          | Situación actual de una orden de compra (Pendiente, Aprobada, Recibida, Cancelada)                                | Status                              |
 
 **🗣️ Frases del Lenguaje Ubicuo en Uso**:
 
@@ -982,23 +1024,23 @@ ddd-inventario-main/
 
 ### Backend
 
-| Tecnología | Versión | Uso |
-|------------|---------|-----|
-| .NET | 9.0 | Framework principal |
-| ASP.NET Core | 9.0 | Web API |
-| Entity Framework Core | 9.0.9 | ORM |
-| SQLite | - | Base de datos |
-| MediatR | Latest | Patrón Mediator (CQRS) |
-| Swashbuckle | Latest | Swagger/OpenAPI |
+| Tecnología            | Versión | Uso                    |
+| --------------------- | ------- | ---------------------- |
+| .NET                  | 9.0     | Framework principal    |
+| ASP.NET Core          | 9.0     | Web API                |
+| Entity Framework Core | 9.0.9   | ORM                    |
+| SQLite                | -       | Base de datos          |
+| MediatR               | Latest  | Patrón Mediator (CQRS) |
+| Swashbuckle           | Latest  | Swagger/OpenAPI        |
 
 ### Frontend
 
-| Tecnología | Versión | Uso |
-|------------|---------|-----|
-| React | 18.2 | UI Framework |
-| TypeScript | 4.9 | Lenguaje tipado |
-| React Router | 6.26 | Enrutamiento |
-| Axios | Latest | Cliente HTTP |
+| Tecnología   | Versión | Uso             |
+| ------------ | ------- | --------------- |
+| React        | 18.2    | UI Framework    |
+| TypeScript   | 4.9     | Lenguaje tipado |
+| React Router | 6.26    | Enrutamiento    |
+| Axios        | Latest  | Cliente HTTP    |
 
 ---
 
@@ -1294,16 +1336,16 @@ Este proyecto es de uso educativo y está disponible bajo licencia MIT.
 
 ## 📊 Información del Proyecto
 
-| Aspecto | Detalle |
-|---------|---------|
-| **🏢 Bounded Context** | Gestión de Inventario |
-| **📅 Fecha de Creación** | Octubre 2025 |
-| **📦 Versión del Sistema** | 1.0.0 |
-| **👨‍💻 Framework Backend** | .NET 9.0 |
-| **🗄️ Base de Datos** | SQLite |
-| **🎨 Framework Frontend** | React 18.2 + TypeScript 4.9 |
-| **🏗️ Patrón Arquitectónico** | Domain-Driven Design (4 capas) |
-| **📐 Patrón de Diseño** | CQRS, Repository, Aggregate, Domain Events |
+| Aspecto                      | Detalle                                    |
+| ---------------------------- | ------------------------------------------ |
+| **🏢 Bounded Context**       | Gestión de Inventario                      |
+| **📅 Fecha de Creación**     | Octubre 2025                               |
+| **📦 Versión del Sistema**   | 1.0.0                                      |
+| **👨‍💻 Framework Backend**     | .NET 9.0                                   |
+| **🗄️ Base de Datos**         | SQLite                                     |
+| **🎨 Framework Frontend**    | React 18.2 + TypeScript 4.9                |
+| **🏗️ Patrón Arquitectónico** | Domain-Driven Design (4 capas)             |
+| **📐 Patrón de Diseño**      | CQRS, Repository, Aggregate, Domain Events |
 
 ### 📚 Referencias Académicas
 
